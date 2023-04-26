@@ -15,14 +15,10 @@ parts:
         source: https://github.com/SeldonIO/seldon-core
         source-type: git
         source-tag: "v1.16.0"  # Should match 'version' above. version.txt is the same, just without the 'v' prefix
-        # TODO why these reqs are not present in the final image?
         python-requirements:
           - servers/xgboostserver/xgboostserver/requirements.txt
         python-packages:
           - seldon_core
-            # - scikit-learn==0.20.3
-            # - numpy>=1.8.2
-            # - xgboost==1.4.2
         override-build: |
           craftctl default
           install -D -m755 servers/xgboostserver/xgboostserver/XGBoostServer.py ${CRAFT_PART_INSTALL}/opt/XGBoostServer.py
