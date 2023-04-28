@@ -15,6 +15,9 @@ parts:
         source: https://github.com/SeldonIO/seldon-core
         source-type: git
         source-tag: "v1.16.0"  # Should match 'version' above. version.txt is the same, just without the 'v' prefix
+        # TODO: Use `source-subdir` once issue is fixed
+        # https://github.com/canonical/craft-parts/issues/427
+        source-depth: 1
         python-requirements:
           - servers/xgboostserver/xgboostserver/requirements.txt
         python-packages:
