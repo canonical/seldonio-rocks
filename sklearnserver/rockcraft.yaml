@@ -18,6 +18,8 @@ services:
       MODEL_NAME: "SKLearnServer"
       SERVICE_TYPE: "MODEL"
       PERSISTENCE: "0"
+    user: ubuntu
+
 platforms:
   amd64:
 
@@ -76,3 +78,17 @@ parts:
       # and blindly executes them, as they should inherit. It doesn't need to be in /microservice,
       # but it does need to match pebble's workdir
       install -D -m 755 ${CRAFT_STAGE}/microservice/SKLearnServer.py microservice/SKLearnServer.py
+
+      # security requirement
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/ROCK images
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
+      dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
+      > ${CRAFT_PART_INSTALL}/usr/share/ROCK images/dpkg.query
+
+  non-root-user:
+    plugin: nil
+    after: [<build-part-name>]
+    overlay-script: |
+      # Create a user in the $CRAFT_OVERLAY chroot
+      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
+      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
