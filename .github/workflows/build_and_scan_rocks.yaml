@@ -1,0 +1,22 @@
+name: Build and scan ROCKs, save and send scan reports
+
+on:
+  workflow_dispatch:
+  #schedule:
+  # every day at 1:12AM UTC
+  #- cron: '12 1 * * *'
+    secrets:
+      JIRA_URL:
+        required: true
+
+jobs:
+  build-scan-rocks:
+    name: Build and scan ROCKs
+    strategy:
+      matrix:
+        rock:
+          - seldon-core-operator
+          - sklearnserver
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rock.yaml@main
+    with:
+      rock: ${{ matrix.rock }}
