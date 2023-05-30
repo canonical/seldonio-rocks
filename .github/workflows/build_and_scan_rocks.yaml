@@ -18,5 +18,7 @@ jobs:
           - seldon-core-operator
           - sklearnserver
     uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rock.yaml@main
+    secrets:
+      JIRA_URL: ${{ secrets.JIRA_URL }}
     with:
       rock: ${{ matrix.rock }}
