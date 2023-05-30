@@ -12,7 +12,8 @@ description: |
 
 version: v1.15.0_22.04_1 # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
 license: Apache-2.0
-base: ubuntu:22.04
+build-base: ubuntu:22.04
+base: bare
 services:
   manager:
     override: replace
@@ -24,15 +25,6 @@ platforms:
   amd64:
 
 parts:
-  security-team-requirement:
-    plugin: nil
-    override-build: |
-      # security requirement
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
-      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
-       dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
-       > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
-
   seldon-core-operator:
     plugin: go
     source: https://github.com/SeldonIO/seldon-core
@@ -107,12 +99,23 @@ parts:
 
   non-root-user:
     plugin: nil
-    after: [seldon-core-operator, mpl-deps]
     overlay-script: |
       # Create a user in the $CRAFT_OVERLAY chroot
+      mkdir -p $CRAFT_OVERLAY/etc
+      chmod 755 $CRAFT_OVERLAY/etc
       groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
       useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
     override-prime: |
       craftctl default
       chown -R 1001:1001 opt/seldon-core-operator
       chown -R 1001:1001 tmp/operator-resources
+
+  security-team-requirement:
+    plugin: nil
+    after: [seldon-core-operator, mpl-deps]
+    override-build: |
+      # security requirement
+      # there are no packages installed in `bare` base which is used in this rock
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query") \
+       > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
