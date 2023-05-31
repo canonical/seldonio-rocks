@@ -3,7 +3,7 @@ summary: An image for Seldon SKLearn Server
 description: |
   This image is used as part of the Charmed Kubeflow product. The SKLearn Server serves
   models which have been stored as pickles.
-version: v1.16.0_1 # version format: <KF-upstream-version>_<Charmed-KF-version>
+version: v1.16.0_20.04_1 # <upstream-version>-<base-version>_<Charmed-KF-version>
 license: Apache-2.0
 base: ubuntu:20.04
 services:
@@ -78,15 +78,20 @@ parts:
       # but it does need to match pebble's workdir
       install -D -m 755 ${CRAFT_STAGE}/microservice/SKLearnServer.py microservice/SKLearnServer.py
 
-      # security requirement
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
-      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
-      dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
-      > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
-
   non-root-user:
     plugin: nil
     overlay-script: |
       # Create a user in the $CRAFT_OVERLAY chroot
       groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
       useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
+
+  security-team-requirement:
+    plugin: nil
+    after: [sklearnserver]
+    override-build: |
+      # security requirement
+      # there are no packages installed in `bare` base which is used in this rock
+      # `--root` option is not available in dpkg-query version which is packaged with 20.04
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query") \
+       > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
