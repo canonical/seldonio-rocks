@@ -2,40 +2,26 @@
 name: Publish ROCK
 
 on:
-  workflow_call:
+  workflow_dispatch:
     inputs:
       rock_dir:
         description: Directory in the repo that contains ROCK image definition
         default: ''
-        required: false
+        required: true
         type: string
     secrets:
       CKF_REGISTRY_USERNAME:
         required: true
       CKF_REGISTRY_PASSWORD:
         required: true
-env:
-  CKF_REGISTRY: ${{ vars.CKF_REGISTRY }}
 
 jobs:
   build-and-publish-rock:
     name: Build and publish ROCK
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-    steps:
-      - name: Build and test ROCK
-        run: |
-          cd ${{ inputs.rock_dir }}
-          tox -e unit
-          tox -e integration
-      - name: Publish ROCK
-        run: |
-          NAME=$(yq eval .name rockcraft.yaml)
-          VERSION=$(yq eval .version rockcraft.yaml)
-          ARCH=$(yq eval ".platforms | keys" rockcraft.yaml | awk -F " " '\''{ print $2 }'\'')
-          ROCK="$\{NAME\}_$\{VERSION\}_$\{ARCH\}"
-          sudo skopeo --insecure-policy copy oci-archive:$ROCK.rock docker-daemon:$ROCK:$VERSION
-          docker tag $ROCK:$VERSION ${{ inputs.CKF_REGISTRY }}/$ROCK:$VERSION
-          docker login -u ${{ inputs.CKF_REGISTRY_USERNAME }} -p ${{inputs.CKF_REGISTRY_PASSWORD }} ${{inputs.CKF_REGISTRY }}
-          docker push ${{ inputs.CKF_REGISTRY }}/$ROCK:$VERSION
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_publish_rock.yaml@main
+    secrets:
+      CKF_REGISTRY_USERNAME: ${{ secrets.CKF_REGISTRY_USERNAME }}
+      CKF_REGISTRY_PASSWORD: ${{ secrets.CKF_REGISTRY_PASSWORD }}
+    with:
+      rock_dir: ${{ inputs.rock_dir }}
+      CKF_REGISTRY: ${{ vars.CKF_REGISTRY }}
