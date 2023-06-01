@@ -1,0 +1,27 @@
+# Workflow to publish ROCK
+name: Publish ROCK
+
+on:
+  workflow_dispatch:
+    inputs:
+      rock_dir:
+        description: Directory in the repo that contains ROCK image definition
+        default: ''
+        required: true
+        type: string
+    secrets:
+      CKF_REGISTRY_USERNAME:
+        required: true
+      CKF_REGISTRY_PASSWORD:
+        required: true
+
+jobs:
+  build-and-publish-rock:
+    name: Build and publish ROCK
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_publish_rock.yaml@main
+    secrets:
+      CKF_REGISTRY_USERNAME: ${{ secrets.CKF_REGISTRY_USERNAME }}
+      CKF_REGISTRY_PASSWORD: ${{ secrets.CKF_REGISTRY_PASSWORD }}
+    with:
+      rock_dir: ${{ inputs.rock_dir }}
+      CKF_REGISTRY: ${{ vars.CKF_REGISTRY }}
