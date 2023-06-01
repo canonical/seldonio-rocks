@@ -4,6 +4,7 @@
 # Tests for required artifacts to be present in the ROCK image.
 #
 
+from charmed_kubeflow_chisme.rock import CheckRock
 from pathlib import Path
 
 import os
@@ -14,13 +15,6 @@ import string
 import subprocess
 import yaml
 from pytest_operator.plugin import OpsTest
-
-def read_rock_info():
-    ROCKCRAFT = yaml.safe_load(Path("rockcraft.yaml").read_text())
-    name = ROCKCRAFT["name"]
-    version = ROCKCRAFT["version"]
-    arch = list(ROCKCRAFT["platforms"].keys())[0]
-    return f"{name}_{version}_{arch}:{version}"
 
 @pytest.fixture()
 def rock_test_env():
@@ -36,8 +30,9 @@ def rock_test_env():
 @pytest.mark.abort_on_fail
 def test_rock(ops_test: OpsTest, rock_test_env):
     """Test rock."""
+    check_rock = CheckRock("rockcraft.yaml")
     container_name = rock_test_env
-    LOCAL_ROCK_IMAGE = read_rock_info()
+    LOCAL_ROCK_IMAGE = check_rock.get_image_name()
 
     # verify that all artifacts are in correct locations
     subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/microservice/SKLearnServer.py"], check=True)
