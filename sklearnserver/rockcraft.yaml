@@ -71,7 +71,6 @@ parts:
       # Snip off the /root/stage part
       bash -c "grep -R -E '/root/stage' opt/ 2>/dev/null | grep -v Bin | awk '{split(\$0,out,\":\"); print out[1]}' | uniq | xargs -I{} sed -i -e 's/\/root\/stage//' {}"
     override-prime: |
-      craftctl default
       cp -rp ${CRAFT_STAGE}/opt opt/
 
       # seldon-core-microservice is a trivial wrapper which looks for .py|.exe files in pwd
@@ -80,14 +79,13 @@ parts:
       install -D -m 755 ${CRAFT_STAGE}/microservice/SKLearnServer.py microservice/SKLearnServer.py
 
       # security requirement
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/ROCK images
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
       (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
       dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
-      > ${CRAFT_PART_INSTALL}/usr/share/ROCK images/dpkg.query
+      > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
 
   non-root-user:
     plugin: nil
-    after: sklearnserver
     overlay-script: |
       # Create a user in the $CRAFT_OVERLAY chroot
       groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
