@@ -15,13 +15,7 @@ import string
 import subprocess
 import yaml
 from pytest_operator.plugin import OpsTest
-
-def read_rock_info():
-    ROCKCRAFT = yaml.safe_load(Path("rockcraft.yaml").read_text())
-    name = ROCKCRAFT["name"]
-    version = ROCKCRAFT["version"]
-    arch = list(ROCKCRAFT["platforms"].keys())[0]
-    return f"{name}_{version}_{arch}:{version}"
+from charmed_kubeflow_chisme.rock import CheckRock
 
 @pytest.fixture()
 def rock_test_env(tmpdir):
@@ -39,18 +33,20 @@ def rock_test_env(tmpdir):
 def test_rock(ops_test: OpsTest, rock_test_env):
     """Test rock."""
     temp_dir, container_name = rock_test_env
-    LOCAL_ROCK_IMAGE = read_rock_info()
+    check_rock = CheckRock("rockcraft.yaml")
+    rock_image = check_rock.get_image_name()
+    rock_version = check_rock.get_version()
 
     rockfs_tar = temp_dir.join("rockfs.tar")
     rockfs_dir = temp_dir.mkdir("rockfs")
 
     # create ROCK filesystem
-    subprocess.run(["docker", "create", f"--name={container_name}", f"{LOCAL_ROCK_IMAGE}"])
+    subprocess.run(["docker", "create", f"--name={container_name}", f"{rock_image}:{rock_version}"])
     subprocess.run(["docker", "export", f"{container_name}", "--output", rockfs_tar], check=True)
     subprocess.run(["tar", "xvf", rockfs_tar, "-C", rockfs_dir], check=True)
 
     # verify that all artifacts are in correct locations
-    files = os.listdir(f"{rockfs_dir}/opt/seldon-core-operator/")
+    files = os.listdir(f"{rockfs_dir}/")
     assert "manager" in files
 
     files = os.listdir(f"{rockfs_dir}/tmp/operator-resources/")
