@@ -15,10 +15,10 @@ license: Apache-2.0
 build-base: ubuntu:22.04
 base: bare
 services:
-  manager:
+  seldon-core:
     override: replace
     summary: "seldon-core service"
-    startup: disabled
+    startup: enabled
     user: ubuntu
     command: "/manager --enable-leader-election --webhook-port 4443"
 platforms:

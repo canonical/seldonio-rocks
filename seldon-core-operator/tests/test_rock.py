@@ -40,6 +40,11 @@ def test_rock(ops_test: OpsTest, rock_test_env):
     rockfs_tar = temp_dir.join("rockfs.tar")
     rockfs_dir = temp_dir.mkdir("rockfs")
 
+    # verify that ROCK service matches charm service
+    rock_services = check_rock.get_services()
+    assert rock_services["seldon-core"]
+    assert rock_services["seldon-core"]["startup"] == "enabled"
+
     # create ROCK filesystem
     subprocess.run(["docker", "create", f"--name={container_name}", f"{rock_image}:{rock_version}"])
     subprocess.run(["docker", "export", f"{container_name}", "--output", rockfs_tar], check=True)
