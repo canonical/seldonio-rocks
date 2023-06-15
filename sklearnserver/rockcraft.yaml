@@ -1,25 +1,27 @@
+# Based on https://github.com/SeldonIO/seldon-core/tree/master/servers/sklearnserver/sklearnserver
 name: sklearnserver
 summary: An image for Seldon SKLearn Server
 description: |
   This image is used as part of the Charmed Kubeflow product. The SKLearn Server serves
   models which have been stored as pickles.
-version: v1.16.0_1 # version format: <KF-upstream-version>_<Charmed-KF-version>
+version: v1.16.0_20.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
 license: Apache-2.0
 base: ubuntu:20.04
+run-user: _daemon_
 services:
   sklearnserver:
     override: replace
     summary: "sklearnserver service"
     startup: enabled
     # Yet again, use a subshell to jam conda into a working state. Can't use bashrc, because it immediately
-    # exits if PS1 isn't set, so no-go from scripts
-    command: bash -c 'cd /microservice && export PATH=/opt/conda/bin/${PATH} && eval $(/opt/conda/bin/conda shell.bash hook 2> /dev/null) && source /opt/conda/etc/profile.d/conda.sh && conda activate && seldon-core-microservice $MODEL_NAME --service-type $SERVICE_TYPE --persistence $PERSISTENCE'
+    # exits if PS1 isn't set, so no-go from scripts.
+    command: bash -c 'cd /microservice && export PATH=/opt/conda/bin/:${PATH} && eval $(/opt/conda/bin/conda shell.bash hook 2> /dev/null) && source /opt/conda/etc/profile.d/conda.sh && conda activate && seldon-core-microservice ${MODEL_NAME} --service-type ${SERVICE_TYPE} &> /tmp/log.txt'
     environment:
+      # the following environment variables are taken from:
+      # https://github.com/SeldonIO/seldon-core/blob/master/servers/sklearnserver/environment
+      # NOTE: PERSISTENCE is omitted because it is depricated
       MODEL_NAME: "SKLearnServer"
       SERVICE_TYPE: "MODEL"
-      PERSISTENCE: "0"
-    user: ubuntu
-
 platforms:
   amd64:
 
@@ -78,15 +80,13 @@ parts:
       # but it does need to match pebble's workdir
       install -D -m 755 ${CRAFT_STAGE}/microservice/SKLearnServer.py microservice/SKLearnServer.py
 
-      # security requirement
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
-      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
-      dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
-      > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
-
-  non-root-user:
+  security-team-requirement:
     plugin: nil
-    overlay-script: |
-      # Create a user in the $CRAFT_OVERLAY chroot
-      groupadd -R $CRAFT_OVERLAY -g 1001 ubuntu
-      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g ubuntu ubuntu
+    after: [sklearnserver]
+    override-build: |
+      # security requirement
+      # there are no packages installed in `bare` base which is used in this rock
+      # `--root` option is not available in dpkg-query version which is packaged with 20.04
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query") \
+       > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
