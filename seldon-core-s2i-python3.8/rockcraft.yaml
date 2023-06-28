@@ -1,0 +1,120 @@
+# https://github.com/SeldonIO/seldon-core/blob/master/wrappers/s2i/python/Dockerfile.gpu
+name: seldon-core-s2i-gpu
+summary: Run s2i for Seldon Core
+description: |
+  Seldon core converts your ML modelsoperatonr (Tensorflow, Pytorch, H2o, etc.) or
+  language wrappers (Python, Java, etc.) into production REST/GRPC
+  microservices.
+
+  Seldon handles scaling to thousands of production machine learning models and
+  provides advanced machine learning capabilities out of the box including
+  Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests,
+  Canaries and more.
+
+version: "1.15.0_22.04_1"
+license: Apache-2.0
+build-base: ubuntu:22.04
+base: bare
+run-user: _daemon_
+services:
+  manager:
+    override: replace
+    summary: "seldon-core-s2i-gpu service"
+    command: /bin/bash # IC: is this command correct?
+    startup: enabled
+platforms:
+  amd64:
+
+parts:
+  s2i:
+    plugin: nil
+    source: https://github.com/SeldonIO/seldon-core
+    source-type: git
+    source-tag: v1.16.0
+    stage-packages:
+      - wget
+      - git
+      - build-essential
+      - make
+      - automake
+      - libsm6
+      - libxext6
+      - libxrender-dev
+      - libglib2.0-0
+    override-stage: |
+      set -xe
+
+      CONDA_REPO="https://repo.anaconda.com/miniconda"
+      CONDA_TARGET="Linux-x86_64"
+      CONDA_DOWNLOAD_VERSION="py38_4.12.0"
+      CONDA_VERSION="4.13.0"
+      PYTHON_VERSION="3.8"
+
+      curl -L https://github.com/certifi/python-certifi/archive/master.tar.gz -o certifi-python-certifi.tar.gz
+      curl -L ${CONDA_REPO}/Miniconda3-${CONDA_DOWNLOAD_VERSION}-${CONDA_TARGET}.sh -o ~/miniconda.sh
+      
+      chmod +x ~/miniconda.sh
+      bash ~/miniconda.sh -b -u -p opt/conda
+      rm ~/miniconda.sh
+      opt/conda/bin/conda install --yes conda=${CONDA_VERSION}
+      opt/conda/bin/conda clean -tipy
+      
+      mkdir -p etc/profile.d
+      ln -sf opt/conda/etc/profile.d/conda.sh etc/profile.d/conda.sh
+      echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc
+      bash -c "opt/conda/bin/conda init bash"
+      echo "conda activate base" >> ~/.bashrc
+      chgrp -R root /opt/conda && chmod -R g+rw /opt/conda
+  
+      # Use a heredoc to build a temporary script. Craft stages use sh, not bash.
+      cat >> ./build.sh <<EOF
+      #!/usr/bin/bash
+      export PWD=$(pwd)
+      export PATH=./opt/conda/bin:${PATH}
+      eval $(/root/stage/opt/conda/bin/conda shell.bash hook 2> /dev/null)
+
+      bash -c '/opt/conda/bin/conda install \
+          -c conda-forge \
+          --yes \
+          python=$PYTHON_VERSION \
+          conda=$CONDA_VERSION'
+      
+      export PATH=/opt/conda/bin:${PATH}
+      echo "export PATH=/opt/conda/bin:${PATH}" >> ~/.bashrc
+
+      bash -c "conda activate base"
+      # conda writes shebangs with its path everywhere, and in crafting, that will be, for example:
+      # #!/root/stage/opt/conda/...
+      #
+      # Snip off the /root/stage part
+      bash -c "grep -R -E '/root/stage' opt/ 2>/dev/null | grep -v Bin | awk '{split(\$0,out,\":\"); print out[1]}' | uniq | xargs -I{} sed -i -e 's/\/root\/stage//' {}"
+
+      mkdir -p ${CRAFT_PART_INSTALL}/s2i/bin
+      
+      install -D -m755 \
+          wrappers/s2i/python/s2i/bin/assemble \
+          ${CRAFT_PART_INSTALL}/s2i/bin/assemble
+      
+      install -D -m755 \
+          wrappers/s2i/python/s2i/bin/run \
+          ${CRAFT_PART_INSTALL}/s2i/bin/run
+      
+      install -D -m755 \
+          wrappers/s2i/python/s2i/bin/save-artifacts \
+          ${CRAFT_PART_INSTALL}/s2i/bin/save-artifacts
+      
+      install -D -m755 \
+          wrappers/s2i/python/s2i/bin/usage \
+          ${CRAFT_PART_INSTALL}/s2i/bin/usage
+
+    override-prime: |
+      cp -rp ${CRAFT_STAGE}/opt opt/
+      mkdir -p ${CRAFT_PART_INSTALL}/microservice
+      cp -R ${CRAFT_PART_BUILD}/python ${CRAFT_PART_INSTALL}/microservice/python
+      cd ${CRAFT_PART_INSTALL}/microservice/python
+      pip install .
+      mkdir -p ${CRAFT_PART_INSTALL}/.conda
+      chmod a+rwx ${CRAFT_PART_INSTALL}/.conda
+      chown -R 8888 ${CRAFT_PART_INSTALL}/microservice
+      ${CRAFT_PRIME}/opt/conda/bin/conda clean --yes --index-cache
+
