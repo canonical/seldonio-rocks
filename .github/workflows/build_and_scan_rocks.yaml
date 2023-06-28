@@ -6,7 +6,7 @@ on:
   # every day at 1:12AM UTC
   #- cron: '12 1 * * *'
     secrets:
-      JIRA_URL:
+      CVE_REPORT_JIRA_URL:
         required: true
 
 jobs:
