@@ -6,7 +6,7 @@ on:
   # every day at 1:12AM UTC
   #- cron: '12 1 * * *'
     secrets:
-      JIRA_URL:
+      CVE_REPORT_JIRA_URL:
         required: true
 
 jobs:
@@ -19,6 +19,6 @@ jobs:
           - sklearnserver
     uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rock.yaml@main
     secrets:
-      JIRA_URL: ${{ secrets.JIRA_URL }}
+      JIRA_URL: ${{ secrets.CVE_REPORT_JIRA_URL }}
     with:
       rock: ${{ matrix.rock }}
