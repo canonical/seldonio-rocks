@@ -1,7 +1,6 @@
 name: Build and scan ROCKs, save and send scan reports
 
 on:
-  workflow_dispatch:
   schedule:
   # every day at 1:12AM UTC
   - cron: '12 1 * * *'
