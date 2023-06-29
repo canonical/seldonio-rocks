@@ -2,9 +2,9 @@ name: Build and scan ROCKs, save and send scan reports
 
 on:
   workflow_dispatch:
-  #schedule:
+  schedule:
   # every day at 1:12AM UTC
-  #- cron: '12 1 * * *'
+  - cron: '12 1 * * *'
     secrets:
       CVE_REPORT_JIRA_URL:
         required: true
