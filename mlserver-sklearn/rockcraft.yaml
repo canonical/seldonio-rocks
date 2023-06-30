@@ -5,8 +5,6 @@ description: |
   This image is used as part of the Charmed Kubeflow product.
 version: 1.2.0_22.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
 license: Apache-2.0
-#build-base: ubuntu:22.04
-#base: bare
 base: ubuntu:22.04
 run-user: _daemon_
 services:
@@ -55,7 +53,7 @@ parts:
       export ROCK_RUNTIME="sklearn"
       export PYTHON_VERSION="3.8.13"
       export CONDA_VERSION="4.13.0"
-      export RUNTIMES="mlserver_sklearn"
+      export RUNTIMES="mlserver_${ROCK_RUNTIME}"
       export MINIFORGE_VERSION="${CONDA_VERSION}-1"
       export MLSERVER_PATH=opt/mlserver
       export CONDA_PATH=opt/conda
@@ -85,9 +83,9 @@ parts:
       mkdir -p $MLSERVER_PATH
       mkdir -p ./wheels
       cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver-*.whl ./wheels
-      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_sklearn-*.whl ./wheels
+      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_${ROCK_RUNTIME}-*.whl ./wheels
       pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver-"*.whl)
-      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_sklearn-"*.whl)
+      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_${ROCK_RUNTIME}-"*.whl)
 
       # replace first line of mlserver script with reference to installed Conda python
       export CONDA_PYTHON="#\!\/opt\/conda\/bin\/python"
