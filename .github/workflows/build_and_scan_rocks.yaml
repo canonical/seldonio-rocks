@@ -2,8 +2,8 @@ name: Build and scan ROCKs, save and send scan reports
 
 on:
   schedule:
-  # every day at 1:12AM UTC
-  - cron: '12 1 * * *'
+  # weekly on Sunday at 1:12AM UTC
+  - cron: '12 1 * * 0'
     secrets:
       CVE_REPORT_JIRA_URL:
         required: true
