@@ -1,0 +1,115 @@
+# Based on https://github.com/SeldonIO/MLServer/blob/1.2.0/Dockerfile
+name: mlserver-sklearn
+summary: An image for Seldon MLServer SKLearn
+description: |
+  This image is used as part of the Charmed Kubeflow product.
+version: 1.2.0_22.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
+license: Apache-2.0
+base: ubuntu:22.04
+run-user: _daemon_
+services:
+  mlserver-sklearn:
+    override: replace
+    summary: "mlserver-sklearn service"
+    startup: enabled
+    # We need to build and activate the "hot-loaded" environment before MLServer starts
+    command: bash -c 'source /opt/conda/etc/profile.d/conda.sh &&  \
+      source /hack/activate-env.sh $MLSERVER_ENV_TARBALL && \
+      mlserver start $MLSERVER_MODELS_DIR'
+    environment:
+      PATH: "/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}"
+      PYTHONPATH: "/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH}"
+      MLSERVER_ENV_TARBALL: "/mnt/models"
+      MLSERVER_MODELS_DIR: "/mnt/models/environment.tar.gz"
+platforms:
+  amd64:
+
+parts:
+  mlserver-sklearn:
+    plugin: nil
+    source: https://github.com/SeldonIO/MLServer
+    source-type: git
+    source-tag: 1.2.0
+    build-packages:
+      - bash
+      - tar
+      - gzip
+      #  TO-DO: Verify need for the packages below
+      # - libgomp
+      # - mesa-libGL
+      # - glib2-devel
+      # - shadow-utils
+    stage-packages:
+      - bash
+    override-build: |
+
+      mkdir -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist
+      cp ${CRAFT_PART_SRC}/setup.py .
+      cp ${CRAFT_PART_SRC}/README.md .
+
+      ./hack/build-wheels.sh ${CRAFT_PART_INSTALL}/opt/mlserver/dist
+
+    override-stage: |
+      export ROCK_RUNTIME="sklearn"
+      export PYTHON_VERSION="3.8.13"
+      export CONDA_VERSION="4.13.0"
+      export RUNTIMES="mlserver_${ROCK_RUNTIME}"
+      export MINIFORGE_VERSION="${CONDA_VERSION}-1"
+      export MLSERVER_PATH=opt/mlserver
+      export CONDA_PATH=opt/conda
+      export PATH=/opt/mlserver/.local/bin:/opt/conda/bin:$PATH
+
+      # Install Conda, Python 3.8 and FFmpeg
+      curl -L -o ~/miniforge3.sh https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-x86_64.sh
+      bash ~/miniforge3.sh -b -u -p ${CONDA_PATH}
+      rm ~/miniforge3.sh
+      ${CONDA_PATH}/bin/conda install --yes conda=${CONDA_VERSION} python=${PYTHON_VERSION} ffmpeg
+      ${CONDA_PATH}/bin/conda clean -tipy
+      mkdir -p etc/profile.d
+      ln -sf ${CONDA_PATH}/etc/profile.d/conda.sh etc/profile.d/conda.sh
+      echo ". ${CONDA_PATH}/etc/profile.d/conda.sh" >> ~/.bashrc
+      echo "PATH=${PATH}" >> ~/.bashrc
+      bash -c "${CONDA_PATH}/bin/conda init bash"
+      echo "conda activate base" >> ~/.bashrc
+      chgrp -R root opt/conda && chmod -R g+rw opt/conda
+
+      # conda writes shebangs with its path everywhere, and in crafting, that will be, for example:
+      # #!/root/stage/opt/conda/...
+      #
+      # Snip off the /root/stage part
+      bash -c "grep -R -E '/root/stage' opt/ 2>/dev/null | grep -v Bin | awk '{split(\$0,out,\":\"); print out[1]}' | uniq | xargs -I{} sed -i -e 's/\/root\/stage//' {}"
+
+      # install required wheels
+      mkdir -p $MLSERVER_PATH
+      mkdir -p ./wheels
+      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver-*.whl ./wheels
+      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_${ROCK_RUNTIME}-*.whl ./wheels
+      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver-"*.whl)
+      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_${ROCK_RUNTIME}-"*.whl)
+
+      # replace first line of mlserver script with reference to installed Conda python
+      export CONDA_PYTHON="#\!\/opt\/conda\/bin\/python"
+      sed -i "1s/.*/${CONDA_PYTHON}/" ${MLSERVER_PATH}/.local/bin/mlserver
+
+      # clean wheels
+      rm -rf ./wheels
+
+    override-prime: |
+      # copy all artifacts
+      cp -rp ${CRAFT_STAGE}/opt .
+
+      # copy required files
+      mkdir -p licenses
+      cp ${CRAFT_PART_SRC}/licenses/license.txt licenses/
+      mkdir -p hack
+      cp ${CRAFT_PART_SRC}/hack/build-env.sh hack/
+      cp ${CRAFT_PART_SRC}/hack/generate_dotenv.py hack/
+      cp ${CRAFT_PART_SRC}/hack/activate-env.sh hack/
+
+  security-team-requirement:
+    plugin: nil
+    override-build: |
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
+      dpkg-query --root=${CRAFT_PROJECT_DIR}/../bundles/ubuntu-22.04/rootfs/ -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
+      > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
