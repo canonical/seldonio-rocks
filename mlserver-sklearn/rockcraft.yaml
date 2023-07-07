@@ -12,15 +12,10 @@ services:
     override: replace
     summary: "mlserver-sklearn service"
     startup: enabled
-    # We need to build and activate the "hot-loaded" environment before MLServer starts
-    command: bash -c 'source /opt/conda/etc/profile.d/conda.sh &&  \
-      source /hack/activate-env.sh $MLSERVER_ENV_TARBALL && \
-      mlserver start $MLSERVER_MODELS_DIR'
+    command: bash -c 'cd /opt/mlserver && export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}:/usr/bin && export PYTHONPATH=/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH} && mlserver start ${MLSERVER_MODELS_DIR}'
     environment:
-      PATH: "/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}"
-      PYTHONPATH: "/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH}"
-      MLSERVER_ENV_TARBALL: "/mnt/models"
-      MLSERVER_MODELS_DIR: "/mnt/models/environment.tar.gz"
+      MLSERVER_ENV_TARBALL: "/mnt/models/environment.tar.gz"
+      MLSERVER_MODELS_DIR: "/mnt/models"
 platforms:
   amd64:
 
@@ -80,12 +75,14 @@ parts:
       bash -c "grep -R -E '/root/stage' opt/ 2>/dev/null | grep -v Bin | awk '{split(\$0,out,\":\"); print out[1]}' | uniq | xargs -I{} sed -i -e 's/\/root\/stage//' {}"
 
       # install required wheels
-      mkdir -p $MLSERVER_PATH
+      mkdir -p ${MLSERVER_PATH}
       mkdir -p ./wheels
       cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver-*.whl ./wheels
       cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_${ROCK_RUNTIME}-*.whl ./wheels
+      pip install --prefix ${MLSERVER_PATH}/.local --upgrade pip wheel 'setuptools<65.6.0'
       pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver-"*.whl)
       pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_${ROCK_RUNTIME}-"*.whl)
+      chown -R root:root ${MLSERVER_PATH} && chmod -R 777 ${MLSERVER_PATH}
 
       # replace first line of mlserver script with reference to installed Conda python
       export CONDA_PYTHON="#\!\/opt\/conda\/bin\/python"
