@@ -12,7 +12,7 @@ services:
     override: replace
     summary: "mlserver-sklearn service"
     startup: enabled
-    command: bash -c 'cd /opt/mlserver && export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}:/usr/bin && export PYTHONPATH=/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH} && mlserver start ${MLSERVER_MODELS_DIR}'
+    command: bash -c 'cd /opt/mlserver && export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}:/usr/bin && export PYTHONPATH=/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH} && eval $(/opt/conda/bin/conda shell.bash hook 2> /dev/null) && source /opt/conda/etc/profile.d/conda.sh && conda activate && mlserver start ${MLSERVER_MODELS_DIR}'
     environment:
       MLSERVER_ENV_TARBALL: "/mnt/models/environment.tar.gz"
       MLSERVER_MODELS_DIR: "/mnt/models"
