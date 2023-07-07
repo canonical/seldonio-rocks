@@ -75,6 +75,7 @@ parts:
       bash -c "grep -R -E '/root/stage' opt/ 2>/dev/null | grep -v Bin | awk '{split(\$0,out,\":\"); print out[1]}' | uniq | xargs -I{} sed -i -e 's/\/root\/stage//' {}"
 
       # install required wheels
+
       mkdir -p ${MLSERVER_PATH}
       mkdir -p ./wheels
       cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver-*.whl ./wheels
