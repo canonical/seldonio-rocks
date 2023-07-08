@@ -1,0 +1,116 @@
+# https://github.com/tensorflow/serving/blob/2.1.0/tensorflow_serving/tools/docker/Dockerfile
+name: tensorflow-serving
+summary: An image for Seldon Tensorflow Serving
+description: |
+  This image is used as part of the Charmed Kubeflow product.
+version: 2.1.0_20.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
+license: Apache-2.0
+base: ubuntu:20.04
+run-user: _daemon_
+services:
+  tensorflow-serving:
+    override: replace
+    summary: "tensorflow-serving service"
+    startup: enabled
+    command: bash -c 'tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=${MODEL_NAME} --model_base_path=${MODEL_BASE_PATH}/${MODEL_NAME} "$@"'
+    environment:
+      MODEL_NAME: "???"
+      MODEL_BASE_PATH: "???"
+platforms:
+  amd64:
+
+parts:
+  tensorflow-serving:
+    plugin: nil
+    source: https://github.com/tensorflow/serving/
+    source-type: git
+    source-tag: 2.12.0
+    build-packages:
+      - automake
+      - build-essential
+      - ca-certificates
+      - curl
+      - git
+      - libcurl3-dev
+      - libfreetype6-dev
+      - libpng-dev
+      - libtool
+      - libzmq3-dev
+      - mlocate
+      - openjdk-8-jdk
+      - openjdk-8-jre-headless
+      - pkg-config
+      - pip
+      - python-dev
+      - software-properties-common
+      - swig
+      - tar
+      - unzip
+      - wget
+      - zip
+      - zlib1g-dev
+      - python3-distutils
+    build-environment:
+      - BAZEL_VERSION: "5.3.0"
+    override-build: |
+      set -e
+      # Install python 3.8.
+      add-apt-repository ppa:deadsnakes/ppa
+      apt-get update && apt-get install -y python3.8 python3.8-dev python3-pip python3.8-venv
+      rm -rf /var/lib/apt/lists/*
+      python3.8 -m pip install pip --upgrade
+      update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 0
+
+      # Make python3.8 the default python version
+      update-alternatives --install /usr/bin/python python /usr/bin/python3.8 0
+
+      pip3 --no-cache-dir install future>=0.17.1 grpcio h5py keras_applications>=1.0.8 keras_preprocessing>=1.1.0 mock numpy portpicker requests --ignore-installed setuptools --ignore-installed six>=1.12.0
+
+      mkdir -p ${CRAFT_PART_INSTALL}/bazel
+      cd ${CRAFT_PART_INSTALL}/bazel
+      curl -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36" -fSsL -O https://github.com/bazelbuild/bazel/releases/download/${BAZEL_VERSION}/bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
+      curl -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36" -fSsL -o ${CRAFT_PART_INSTALL}/bazel/LICENSE.txt https://raw.githubusercontent.com/bazelbuild/bazel/master/LICENSE && \
+      chmod +x bazel-*.sh
+      bash ./bazel-${BAZEL_VERSION}-installer-linux-x86_64.sh
+      #rm -f bazel/bazel-$BAZEL_VERSION-installer-linux-x86_64.sh
+
+      # Build, and install TensorFlow Serving
+      export TF_SERVING_VERSION_GIT_COMMIT=HEAD
+      export TF_SERVING_BUILD_OPTIONS="--config=release"
+      echo "Building with build options: ${TF_SERVING_BUILD_OPTIONS}"
+      export TF_SERVING_BAZEL_OPTIONS=""
+      echo "Building with Bazel options: ${TF_SERVING_BAZEL_OPTIONS}"
+      export PATH=${PATH}:${CRAFT_PART_INSTALL}/bazel:/usr/local/bin:/usr/bin
+
+      mkdir -p /root/.cache
+      chmod -R 766 /root/.cache
+      cd ${CRAFT_PART_SRC}
+      touch WORKSPACE
+
+      bazel build --color=yes --curses=yes ${TF_SERVING_BAZEL_OPTIONS} --verbose_failures --output_filter=DONT_MATCH_ANYTHING ${TF_SERVING_BUILD_OPTIONS} tensorflow_serving/model_servers:tensorflow_model_server
+      cp bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server ${CRAFT_PART_INSTALL}/usr/local/bin/
+
+      # Build and install TensorFlow Serving API
+      #bazel build --color=yes --curses=yes ${TF_SERVING_BAZEL_OPTIONS} --verbose_failures --output_filter=DONT_MATCH_ANYTHING ${TF_SERVING_BUILD_OPTIONS} tensorflow_serving/tools/pip_package:build_pip_package
+      #bazel-bin/tensorflow_serving/tools/pip_package/build_pip_package ${CRAFT_PART_INSTAL}/tmp/pip
+      #pip --no-cache-dir install --upgrade ${CRAFT_PART_INSTAL}/tmp/pip/tensorflow_serving_api-*.whl
+      #rm -rf /tmp/pip
+
+      # Clean up Bazel cache when done.
+      #bazel clean --expunge --color=yes
+      #rm -rf /root/.cache
+
+      #organize:
+      #opt/oidc-authservice/bin/oidc-authservice: usr/bin/oidc-authservice
+      #opt/oidc-authservice/bin/oidc-authservice: home/authservice/oidc-authservice
+      #opt/oidc-authservice/web: home/authservice/web
+
+  security-requirements:
+    plugin: nil
+    after: [tensorflow-serving]
+    override-build: |
+      # security requirement using `ubuntu-22.04` base
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
+      #(echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
+      # dpkg-query --root=${CRAFT_PROJECT_DIR}/../bundles/ubuntu-22.04/rootfs/ -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
+      # > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
