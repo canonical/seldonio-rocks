@@ -91,26 +91,26 @@ parts:
       cp bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server ${CRAFT_PART_INSTALL}/usr/local/bin/
 
       # Build and install TensorFlow Serving API
-      #bazel build --color=yes --curses=yes ${TF_SERVING_BAZEL_OPTIONS} --verbose_failures --output_filter=DONT_MATCH_ANYTHING ${TF_SERVING_BUILD_OPTIONS} tensorflow_serving/tools/pip_package:build_pip_package
-      #bazel-bin/tensorflow_serving/tools/pip_package/build_pip_package ${CRAFT_PART_INSTAL}/tmp/pip
-      #pip --no-cache-dir install --upgrade ${CRAFT_PART_INSTAL}/tmp/pip/tensorflow_serving_api-*.whl
-      #rm -rf /tmp/pip
+      bazel build --color=yes --curses=yes ${TF_SERVING_BAZEL_OPTIONS} --verbose_failures --output_filter=DONT_MATCH_ANYTHING ${TF_SERVING_BUILD_OPTIONS} tensorflow_serving/tools/pip_package:build_pip_package
+      bazel-bin/tensorflow_serving/tools/pip_package/build_pip_package ${CRAFT_PART_INSTAL}/tmp/pip
+      pip --no-cache-dir install --upgrade ${CRAFT_PART_INSTAL}/tmp/pip/tensorflow_serving_api-*.whl
+      rm -rf /tmp/pip
 
       # Clean up Bazel cache when done.
-      #bazel clean --expunge --color=yes
-      #rm -rf /root/.cache
+      bazel clean --expunge --color=yes
+      rm -rf /root/.cache/bazel
 
-      #organize:
-      #opt/oidc-authservice/bin/oidc-authservice: usr/bin/oidc-authservice
-      #opt/oidc-authservice/bin/oidc-authservice: home/authservice/oidc-authservice
-      #opt/oidc-authservice/web: home/authservice/web
+      organize:
+        usr/local/bin/tensorflow_model_server: usr/bin/tensorflow_model_server
 
   security-requirements:
     plugin: nil
     after: [tensorflow-serving]
     override-build: |
       # security requirement using `ubuntu-22.04` base
-      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
-      #(echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
-      # dpkg-query --root=${CRAFT_PROJECT_DIR}/../bundles/ubuntu-22.04/rootfs/ -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
       # > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
+      # `--root` option is not available in dpkg-query version which is packaged with 20.04
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
+      (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query") \
+       > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
+
