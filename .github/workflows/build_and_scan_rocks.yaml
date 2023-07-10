@@ -14,6 +14,9 @@ jobs:
     strategy:
       matrix:
         rock:
+          - mlserver-huggingface
+          - mlserver-mlflow
+          - mlserver-sklearn
           - seldon-core-operator
           - sklearnserver
     uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rock.yaml@main
