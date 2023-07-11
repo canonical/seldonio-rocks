@@ -86,7 +86,9 @@ parts:
       chmod -R 766 /root/.cache
       cd ${CRAFT_PART_SRC}
       touch WORKSPACE
-
+      echo "startup --batch_cpu_scheduling --io_nice_level 7" >> .bazelrc
+      echo "build --jobs 6 --ram_utilization_factor 50" >> .bazelrc
+      echo "test --jobs 6" >> .bazelrc
       bazel build --color=yes --curses=yes ${TF_SERVING_BAZEL_OPTIONS} --verbose_failures --output_filter=DONT_MATCH_ANYTHING ${TF_SERVING_BUILD_OPTIONS} tensorflow_serving/model_servers:tensorflow_model_server
       cp bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server ${CRAFT_PART_INSTALL}/usr/local/bin/
 
