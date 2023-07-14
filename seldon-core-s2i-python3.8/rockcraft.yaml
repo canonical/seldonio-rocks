@@ -1,5 +1,5 @@
 # https://github.com/SeldonIO/seldon-core/blob/master/wrappers/s2i/python/Dockerfile.gpu
-name: seldon-core-s2i-gpu
+name: seldon-core-s2i
 summary: Run s2i for Seldon Core
 description: |
   Seldon core converts your ML modelsoperatonr (Tensorflow, Pytorch, H2o, etc.) or
@@ -11,16 +11,17 @@ description: |
   Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests,
   Canaries and more.
 
-version: "1.15.0_22.04_1"
+version: "v1.16.0_22.04_1"
 license: Apache-2.0
 build-base: ubuntu:22.04
-base: bare
+#base: bare
+base: ubuntu:22.04
 run-user: _daemon_
 services:
   manager:
     override: replace
-    summary: "seldon-core-s2i-gpu service"
-    command: /bin/bash # IC: is this command correct?
+    summary: "seldon-core-s2i build image"
+    command: bash -c 'echo "This is S2I build image"'
     startup: enabled
 platforms:
   amd64:
@@ -41,7 +42,7 @@ parts:
       - libxext6
       - libxrender-dev
       - libglib2.0-0
-    override-stage: |
+    override-build: |
       set -xe
 
       export CONDA_REPO="https://repo.anaconda.com/miniconda"
@@ -58,6 +59,7 @@ parts:
       bash ~/miniconda.sh -b -u -p opt/conda
       rm ~/miniconda.sh
       ${CONDA_PATH}/bin/conda install --yes -c conda-forge conda=${CONDA_VERSION} python=${PYTHON_VERSION}
+      pip install --upgrade pip setuptools wheel
       ${CONDA_PATH}/bin/conda clean -tipy
       mkdir -p etc/profile.d
       ln -sf ${CONDA_PATH}/etc/profile.d/conda.sh etc/profile.d/conda.sh
@@ -72,6 +74,17 @@ parts:
       #
       # Snip off the /root/stage part
       bash -c "grep -R -E '/root/stage' opt/ 2>/dev/null | grep -v Bin | awk '{split(\$0,out,\":\"); print out[1]}' | uniq | xargs -I{} sed -i -e 's/\/root\/stage//' {}"
+
+
+      mkdir -p ${CRAFT_PART_INSTALL}/microservice
+      cp -R ${CRAFT_PART_BUILD}/python ${CRAFT_PART_INSTALL}/microservice/python
+      cd ${CRAFT_PART_INSTALL}/microservice/python
+      pip install .
+      cd -
+      mkdir -p ${CRAFT_PART_INSTALL}/.conda
+      chmod a+rwx ${CRAFT_PART_INSTALL}/.conda
+      chown -R 8888 ${CRAFT_PART_INSTALL}/microservice
+      ${CONDA_PATH}/bin/conda clean --yes --index-cache
 
       mkdir -p ${CRAFT_PART_INSTALL}/s2i/bin
       
@@ -91,15 +104,4 @@ parts:
           ${CRAFT_PART_SRC}/wrappers/s2i/python/s2i/bin/usage \
           ${CRAFT_PART_INSTALL}/s2i/bin/usage
 
-      mkdir -p ${CRAFT_PART_INSTALL}/microservice
-      cp -R ${CRAFT_PART_BUILD}/python ${CRAFT_PART_INSTALL}/microservice/python
-      cd ${CRAFT_PART_INSTALL}/microservice/python
-      pip install .
-      mkdir -p ${CRAFT_PART_INSTALL}/.conda
-      chmod a+rwx ${CRAFT_PART_INSTALL}/.conda
-      chown -R 8888 ${CRAFT_PART_INSTALL}/microservice
-      ${CRAFT_PRIME}/opt/conda/bin/conda clean --yes --index-cache
-
-    override-prime: |
-      cp -rp ${CRAFT_STAGE}/opt opt/
 
