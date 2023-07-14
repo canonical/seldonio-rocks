@@ -20,6 +20,7 @@ jobs:
           - mlserver-xgboost
           - seldon-core-operator
           - sklearnserver
+      max-parallel: 1
     uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rock.yaml@main
     secrets:
       JIRA_URL: ${{ secrets.CVE_REPORT_JIRA_URL }}
