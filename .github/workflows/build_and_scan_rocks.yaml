@@ -10,6 +10,10 @@ on:
 
 jobs:
   build-scan-rocks:
+    name: Build and scan ROCKs
+    runs-on: ubuntu-20.04
+
+    steps:
     - name: Maximise GH runner space
       uses: easimon/maximize-build-space@v7
       with:
