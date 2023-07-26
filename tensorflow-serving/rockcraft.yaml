@@ -3,7 +3,7 @@ name: tensorflow-serving
 summary: An image for Seldon Tensorflow Serving
 description: |
   This image is used as part of the Charmed Kubeflow product.
-version: 2.1.0_20.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
+version: 2.13.0_20.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
 license: Apache-2.0
 base: ubuntu:20.04
 run-user: _daemon_
@@ -14,8 +14,8 @@ services:
     startup: enabled
     command: bash -c 'tensorflow_model_server --port=8500 --rest_api_port=8501 --model_name=${MODEL_NAME} --model_base_path=${MODEL_BASE_PATH}/${MODEL_NAME} "$@"'
     environment:
-      MODEL_NAME: "???"
-      MODEL_BASE_PATH: "???"
+      MODEL_NAME: "model"
+      MODEL_BASE_PATH: "/models"
 platforms:
   amd64:
 
@@ -24,7 +24,7 @@ parts:
     plugin: nil
     source: https://github.com/tensorflow/serving/
     source-type: git
-    source-tag: 2.12.0
+    source-tag: 2.13.0
     build-packages:
       - automake
       - build-essential
@@ -84,26 +84,25 @@ parts:
 
       mkdir -p /root/.cache
       chmod -R 766 /root/.cache
+      mkdir -p ${CRAFT_PART_INSTALL}/usr/local/bin/
       cd ${CRAFT_PART_SRC}
       touch WORKSPACE
-      echo "startup --batch_cpu_scheduling --io_nice_level 7" >> .bazelrc
-      echo "build --jobs 6 --ram_utilization_factor 50" >> .bazelrc
-      echo "test --jobs 6" >> .bazelrc
       bazel build --color=yes --curses=yes ${TF_SERVING_BAZEL_OPTIONS} --verbose_failures --output_filter=DONT_MATCH_ANYTHING ${TF_SERVING_BUILD_OPTIONS} tensorflow_serving/model_servers:tensorflow_model_server
-      cp bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server ${CRAFT_PART_INSTALL}/usr/local/bin/
+      cp ${CRAFT_PART_SRC}/bazel-bin/tensorflow_serving/model_servers/tensorflow_model_server ${CRAFT_PART_INSTALL}/usr/local/bin/
 
       # Build and install TensorFlow Serving API
+      mkdir -p ${CRAFT_PART_INSTALL}/tmp/pip
       bazel build --color=yes --curses=yes ${TF_SERVING_BAZEL_OPTIONS} --verbose_failures --output_filter=DONT_MATCH_ANYTHING ${TF_SERVING_BUILD_OPTIONS} tensorflow_serving/tools/pip_package:build_pip_package
-      bazel-bin/tensorflow_serving/tools/pip_package/build_pip_package ${CRAFT_PART_INSTAL}/tmp/pip
-      pip --no-cache-dir install --upgrade ${CRAFT_PART_INSTAL}/tmp/pip/tensorflow_serving_api-*.whl
+      ${CRAFT_PART_SRC}/bazel-bin/tensorflow_serving/tools/pip_package/build_pip_package ${CRAFT_PART_INSTALL}/tmp/pip
+      pip --no-cache-dir install --upgrade ${CRAFT_PART_INSTALL}/tmp/pip/tensorflow_serving_api-*.whl
       rm -rf /tmp/pip
 
       # Clean up Bazel cache when done.
-      bazel clean --expunge --color=yes
-      rm -rf /root/.cache/bazel
+      #bazel clean --expunge --color=yes
+      #rm -rf /root/.cache/bazel
 
-      organize:
-        usr/local/bin/tensorflow_model_server: usr/bin/tensorflow_model_server
+      #organize:
+      #  usr/local/bin/tensorflow_model_server: usr/bin/tensorflow_model_server
 
   security-requirements:
     plugin: nil
