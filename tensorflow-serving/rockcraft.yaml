@@ -42,6 +42,10 @@ parts:
       - pkg-config
       - pip
       - python-dev
+      - python3.8
+      - python3.8-dev
+      - python3-pip
+      - python3.8-venv
       - software-properties-common
       - swig
       - tar
@@ -54,10 +58,6 @@ parts:
       - BAZEL_VERSION: "5.3.0"
     override-build: |
       set -e
-      # Install python 3.8.
-      add-apt-repository ppa:deadsnakes/ppa
-      apt-get update && apt-get install -y python3.8 python3.8-dev python3-pip python3.8-venv
-      rm -rf /var/lib/apt/lists/*
       python3.8 -m pip install pip --upgrade
       update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 0
 
@@ -98,11 +98,11 @@ parts:
       rm -rf /tmp/pip
 
       # Clean up Bazel cache when done.
-      #bazel clean --expunge --color=yes
-      #rm -rf /root/.cache/bazel
+      bazel clean --expunge --color=yes
+      rm -rf /root/.cache/bazel
 
-      #organize:
-      #  usr/local/bin/tensorflow_model_server: usr/bin/tensorflow_model_server
+    organize:
+      usr/local/bin/tensorflow_model_server: usr/bin/tensorflow_model_server
 
   security-requirements:
     plugin: nil
