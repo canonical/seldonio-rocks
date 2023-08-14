@@ -6,8 +6,7 @@ on:
 jobs:
   build-scan-rocks:
     name: Build and scan ROCKs
-    #runs-on: [self-hosted, linux, X64, jammy, two-xlarge]
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, linux, X64, jammy, two-xlarge]
     timeout-minutes: 200
     strategy:
       matrix:
@@ -47,6 +46,7 @@ jobs:
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           rock: ${{ matrix.rock }}
+        working-directory: ${{ matrix.rock }}
 
       - name: Copy ROCK to Docker
         id: rock_in_docker
@@ -68,6 +68,7 @@ jobs:
           format: 'json'
           output: '${{ matrix.rock }}/trivy-report-${{ matrix.rock }}.json'
           ignore-unfixed: true
+        working-directory: ${{ matrix.rock }}
 
       - name: Prepare artifacts
         run: |
