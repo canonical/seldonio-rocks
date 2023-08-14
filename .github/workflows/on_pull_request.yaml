@@ -1,0 +1,85 @@
+name: Build and scan ROCKs, save and send scan reports
+
+on:
+  schedule:
+  # every day at 1:12AM UTC
+  - cron: '12 1 * * *'
+    secrets:
+      CVE_REPORT_JIRA_URL:
+        required: true
+
+jobs:
+  build-scan-rocks:
+    name: Build and scan ROCKs
+    runs-on: [self-hosted, linux, X64, jammy, two-xlarge]
+    timeout-minutes: 200
+    strategy:
+      matrix:
+        rock:
+          - mlserver-huggingface
+          - mlserver-mlflow
+          - mlserver-sklearn
+          - mlserver-xgboost
+          - seldon-core-operator
+          - sklearnserver
+          - tensorflow-serving
+    steps:
+      - name: Install tools
+        run: |
+          sudo apt-get update -yqq
+          sudo apt install software-properties-common -yqq
+          sudo apt-get install -yqq python3-pip
+          sudo --preserve-env=http_proxy,https_proxy,no_proxy pip3 install tox pip-tools
+          sudo snap install jq
+          sudo snap install yq
+          sudo snap install docker
+
+      - name: Install ROCK dev tools
+        run: |
+          sudo install rockcraft --classic --edge
+
+      - name: Setup LXD
+        run: |
+          sudo lxd waitready || true
+          sudo lxd init --minimal
+          sudo chmod a+wr /var/snap/lxd/common/lxd/unix.socket
+          lxc network set lxdbr0 ipv6.address none
+          bash -c 'sudo usermod -a -G lxd $USER'
+          bash -c 'sudo su $USER'
+
+      - name: Build 
+      - uses: canonical/craft-actions/rockcraft-pack@main
+        with:
+          rock: ${{ matrix.rock }}
+
+      - name: Copy ROCK to Docker
+        id: rock_in_docker
+        run: |
+          NAME=$(yq eval ".name" rockcraft.yaml)
+          VERSION=$(yq eval ".version" rockcraft.yaml)
+          ARCH=$(yq eval ".platforms | keys" rockcraft.yaml | awk -F ' ' '{print $2}')
+          ROCK="${NAME}_${VERSION}_${ARCH}"
+          sudo skopeo --insecure-policy copy oci-archive:$ROCK.rock docker-daemon:$ROCK:$VERSION
+          echo "image=$ROCK:$VERSION" >> "$GITHUB_OUTPUT"
+        working-directory: ${{ matrix.rock }}
+
+      - name: Scan for vulnerabilities
+        id: scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'image'
+          image-ref: '${{ steps.rock_in_docker.outputs.image }}'
+          format: 'json'
+          output: '${{ matrix.rock }}/trivy-report-${{ matrix.rock }}.json'
+          ignore-unfixed: true
+
+      - name: Prepare artifacts
+        run: |
+          tar zcvf trivy-report-${{ matrix.rock }}.tar.gz trivy-report-${{ matrix.rock }}.json
+        working-directory: ${{ matrix.rock }}
+
+      - name: Upload Trivy reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: trivy-report-${{ matrix.rock }}
+          path: ${{ matrix.rock }}/trivy-report-${{ matrix.rock }}.tar.gz
