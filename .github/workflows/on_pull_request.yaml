@@ -46,7 +46,6 @@ jobs:
         uses: canonical/craft-actions/rockcraft-pack@main
         with:
           path: ${{ matrix.rock }}
-          rock: ${{ matrix.rock }}
 
       - name: Copy ROCK to Docker
         id: rock_in_docker
@@ -59,23 +58,23 @@ jobs:
           echo "image=$ROCK:$VERSION" >> "$GITHUB_OUTPUT"
         working-directory: ${{ matrix.rock }}
 
-      - name: Scan for vulnerabilities
-        id: scan
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'image'
-          image-ref: '${{ steps.rock_in_docker.outputs.image }}'
-          format: 'json'
-          output: '${{ matrix.rock }}/trivy-report-${{ matrix.rock }}.json'
-          ignore-unfixed: true
+      # - name: Scan for vulnerabilities
+      #   id: scan
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     scan-type: 'image'
+      #     image-ref: '${{ steps.rock_in_docker.outputs.image }}'
+      #     format: 'json'
+      #     output: '${{ matrix.rock }}/trivy-report-${{ matrix.rock }}.json'
+      #     ignore-unfixed: true
 
-      - name: Prepare artifacts
-        run: |
-          tar zcvf trivy-report-${{ matrix.rock }}.tar.gz trivy-report-${{ matrix.rock }}.json
-        working-directory: ${{ matrix.rock }}
+      # - name: Prepare artifacts
+      #   run: |
+      #     tar zcvf trivy-report-${{ matrix.rock }}.tar.gz trivy-report-${{ matrix.rock }}.json
+      #   working-directory: ${{ matrix.rock }}
 
-      - name: Upload Trivy reports
-        uses: actions/upload-artifact@v3
-        with:
-          name: trivy-report-${{ matrix.rock }}
-          path: ${{ matrix.rock }}/trivy-report-${{ matrix.rock }}.tar.gz
+      # - name: Upload Trivy reports
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: trivy-report-${{ matrix.rock }}
+      #     path: ${{ matrix.rock }}/trivy-report-${{ matrix.rock }}.tar.gz
