@@ -1,12 +1,7 @@
 name: On Pull request
 
 on:
-  schedule:
-  # every day at 1:12AM UTC
-  - cron: '12 1 * * *'
-    secrets:
-      CVE_REPORT_JIRA_URL:
-        required: true
+  pull_request:
 
 jobs:
   build-scan-rocks:
