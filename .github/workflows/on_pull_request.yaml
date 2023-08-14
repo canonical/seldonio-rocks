@@ -6,7 +6,8 @@ on:
 jobs:
   build-scan-rocks:
     name: Build and scan ROCKs
-    runs-on: [self-hosted, linux, X64, jammy, two-xlarge]
+    #runs-on: [self-hosted, linux, X64, jammy, two-xlarge]
+    runs-on: ubuntu-22.04
     timeout-minutes: 200
     strategy:
       matrix:
