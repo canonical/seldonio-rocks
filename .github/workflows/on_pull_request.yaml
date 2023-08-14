@@ -68,7 +68,6 @@ jobs:
           format: 'json'
           output: '${{ matrix.rock }}/trivy-report-${{ matrix.rock }}.json'
           ignore-unfixed: true
-        working-directory: ${{ matrix.rock }}
 
       - name: Prepare artifacts
         run: |
