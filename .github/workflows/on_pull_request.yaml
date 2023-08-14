@@ -32,7 +32,7 @@ jobs:
 
       - name: Install ROCK dev tools
         run: |
-          sudo install rockcraft --classic --edge
+          sudo snap install rockcraft --classic --edge
 
       - name: Setup LXD
         run: |
