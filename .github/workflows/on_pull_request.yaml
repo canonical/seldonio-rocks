@@ -1,4 +1,4 @@
-name: Build and scan ROCKs, save and send scan reports
+name: On Pull request
 
 on:
   schedule:
@@ -48,7 +48,7 @@ jobs:
           bash -c 'sudo su $USER'
 
       - name: Build 
-      - uses: canonical/craft-actions/rockcraft-pack@main
+        uses: canonical/craft-actions/rockcraft-pack@main
         with:
           rock: ${{ matrix.rock }}
 
