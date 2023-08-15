@@ -1,13 +1,20 @@
-name: On Pull request
+#
+# On pull request workflow for ROCKs on self-hosted Github runners
+# - Build ROCK
+# - Scan using Trivy scanner
+# - Upload scan report
+#
+name: On pull request self-hosted
 
 on:
   pull_request:
 
 jobs:
   build-scan-rocks:
-    name: Build and scan ROCKs
+    name: Build and scan ROCKs self-hosted
     runs-on: [self-hosted, linux, X64, jammy, two-xlarge]
-    timeout-minutes: 200
+    # long time out ensures heavy ROCKs have enoguh time to finish build/pack
+    timeout-minutes: 2400
     strategy:
       matrix:
         rock:
@@ -41,14 +48,16 @@ jobs:
           bash -c 'sudo usermod -a -G lxd $USER'
           bash -c 'sudo su $USER'
 
-      - name: Build 
-        uses: canonical/craft-actions/rockcraft-pack@main
-        with:
-          path: ${{ matrix.rock }}
+      # TO-DO: use canonical/craft-actions/rockcraft-pack@main action when it is working in self-hosted runners
+      # - name: Build
+      #   uses: canonical/craft-actions/rockcraft-pack@main
+      #   with:
+      #     path: ${{ matrix.rock }}
 
-      - name: Copy ROCK to Docker
+      - name: Build ROCK and copy it to Docker
         id: rock_in_docker
         run: |
+          rockcraft pack
           sudo snap install docker
           NAME=$(yq eval ".name" rockcraft.yaml)
           VERSION=$(yq eval ".version" rockcraft.yaml)
