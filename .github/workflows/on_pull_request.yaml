@@ -60,7 +60,6 @@ jobs:
       - name: Build ROCK and copy it to Docker
         id: rock_in_docker
         run: |
-          ls -la
           rockcraft pack
           sudo snap install docker
           NAME=$(yq eval ".name" rockcraft.yaml)
