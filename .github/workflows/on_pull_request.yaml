@@ -61,7 +61,7 @@ jobs:
       - name: Build ROCK and copy it to Docker
         id: rock_in_docker
         run: |
-          rockcraft pack
+          rockcraft pack --verbosity=trace
           sudo snap install docker
           # NAME=$(yq eval ".name" rockcraft.yaml)
           # VERSION=$(yq eval ".version" rockcraft.yaml)
@@ -69,7 +69,7 @@ jobs:
           # ROCK="${NAME}_${VERSION}_${ARCH}"
           # sudo skopeo --insecure-policy copy oci-archive:$ROCK.rock docker-daemon:$ROCK:$VERSION
           # echo "image=$ROCK:$VERSION" >> "$GITHUB_OUTPUT"
-        working-directory: ${{ matrix.rock }}
+        working-directory: ./${{ matrix.rock }}
 
       - name: Scan for vulnerabilities
         id: scan
