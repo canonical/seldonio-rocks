@@ -41,7 +41,7 @@ jobs:
       - name: Install ROCK dev tools
         run: |
           sudo snap install rockcraft --classic --edge
-          sudo snap install skopeo --edge
+          sudo snap install skopeo --edge --devmode
 
       - name: Setup LXD
         run: |
