@@ -61,8 +61,8 @@ jobs:
       - name: Build ROCK and copy it to Docker
         id: rock_in_docker
         run: |
-          rockcraft pack --verbosity=trace
-          sudo snap install docker
+          bash -c 'rockcraft pack --verbosity=trace'
+          # sudo snap install docker
           # NAME=$(yq eval ".name" rockcraft.yaml)
           # VERSION=$(yq eval ".version" rockcraft.yaml)
           # ARCH=$(yq eval ".platforms | keys" rockcraft.yaml | awk -F ' ' '{print $2}')
