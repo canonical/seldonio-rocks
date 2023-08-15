@@ -13,7 +13,7 @@ jobs:
   build-scan-rocks:
     name: Build and scan ROCKs self-hosted
     runs-on: [self-hosted, linux, X64, jammy, two-xlarge]
-    # long time out ensures heavy ROCKs have enoguh time to finish build/pack
+    # long timeout ensures heavy ROCKs have enoguh time to finish build/pack
     timeout-minutes: 2400
     strategy:
       matrix:
@@ -61,7 +61,7 @@ jobs:
       - name: Build ROCK and copy it to Docker
         id: rock_in_docker
         run: |
-          bash -c 'rockcraft pack --verbosity=trace'
+          rockcraft pack --verbosity=quiet
           # sudo snap install docker
           # NAME=$(yq eval ".name" rockcraft.yaml)
           # VERSION=$(yq eval ".version" rockcraft.yaml)
