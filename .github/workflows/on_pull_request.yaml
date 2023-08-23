@@ -51,17 +51,16 @@ jobs:
           lxc network set lxdbr0 ipv6.address none
           bash -c 'sudo usermod -a -G lxd $USER'
 
-      - name: Build
-        uses: canonical/craft-actions/rockcraft-pack@main
-        with:
-          path: ${{ matrix.rock }}
+      #- name: Build
+      #  uses: canonical/craft-actions/rockcraft-pack@main
+      #  with:
+      #    path: ${{ matrix.rock }}
 
-      #- name: Build ROCK and copy it to Docker
-      #  id: rock_in_docker
-      #  run: |
-      #    sleep 30m
-      #    rockcraft pack --verbosity=debug
-      #  working-directory: ./${{ matrix.rock }}
+      - name: Build ROCK and copy it to Docker
+        id: rock_in_docker
+        run: |
+          rockcraft pack --verbosity=debug
+        working-directory: ./${{ matrix.rock }}
 
       - name: Scan for vulnerabilities
         id: scan
