@@ -51,10 +51,10 @@ jobs:
           lxc network set lxdbr0 ipv6.address none
           bash -c 'sudo usermod -a -G lxd $USER'
 
-       - name: Build
-         uses: canonical/craft-actions/rockcraft-pack@main
-         with:
-           path: ${{ matrix.rock }}
+      - name: Build
+        uses: canonical/craft-actions/rockcraft-pack@main
+        with:
+          path: ${{ matrix.rock }}
 
       #- name: Build ROCK and copy it to Docker
       #  id: rock_in_docker
