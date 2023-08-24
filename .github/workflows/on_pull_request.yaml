@@ -50,6 +50,7 @@ jobs:
           sudo chmod a+wr /var/snap/lxd/common/lxd/unix.socket
           lxc network set lxdbr0 ipv6.address none
           bash -c 'sudo usermod -a -G lxd $USER'
+          sudo iptables -I DOCKER-USER -j ACCEPT
 
       #- name: Build
       #  uses: canonical/craft-actions/rockcraft-pack@main
