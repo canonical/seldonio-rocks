@@ -1,11 +1,11 @@
-# Based on https://github.com/SeldonIO/MLServer/blob/1.2.0/Dockerfile
+# Based on https://github.com/SeldonIO/MLServer/blob/1.3.5/Dockerfile
 name: mlserver-xgboost
 summary: An image for Seldon MLServer XGBoost
 description: |
   This image is used as part of the Charmed Kubeflow product.
-version: 1.2.0_22.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
+version: 1.3.5_20.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
 license: Apache-2.0
-base: ubuntu:22.04
+base: ubuntu:20.04
 run-user: _daemon_
 services:
   mlserver-xgboost:
@@ -13,14 +13,18 @@ services:
     summary: "mlserver-xgboost service"
     startup: enabled
     # We need to build and activate the "hot-loaded" environment before MLServer starts
-    command: bash -c 'export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH} && \
+    command: bash -c 'export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}:/usr/bin && \
       export PYTHONPATH=/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH} && \
-      source /opt/conda/etc/profile.d/conda.sh &&  \
-      source /hack/activate-env.sh $MLSERVER_ENV_TARBALL && \
-      mlserver start $MLSERVER_MODELS_DIR'
+      eval $(/opt/conda/bin/conda shell.bash hook 2> /dev/null) && \
+      source /hack/activate-env.sh && \
+      mlserver start ${MLSERVER_MODELS_DIR}'
+    working-dir: "/opt/mlserver"
     environment:
-      MLSERVER_ENV_TARBALL: "/mnt/models"
-      MLSERVER_MODELS_DIR: "/mnt/models/environment.tar.gz"
+      MLSERVER_ENV_TARBALL: "/mnt/models/environment.tar.gz"
+      MLSERVER_MODELS_DIR: "/mnt/models"
+      LD_LIBRARY_PATH: "/usr/local/nvidia/lib64:/opt/conda/lib/python3.8/site-packages/nvidia/cuda_runtime/lib:$LD_LIBRARY_PATH"
+      TRANSFORMERS_CACHE: "/opt/mlserver/.cache"
+      NUMBA_CACHE_DIR: "/opt/mlserver/.cache"
 platforms:
   amd64:
 
@@ -29,32 +33,32 @@ parts:
     plugin: nil
     source: https://github.com/SeldonIO/MLServer
     source-type: git
-    source-tag: 1.2.0
+    source-tag: 1.3.5
     build-packages:
-      - bash
-      - tar
-      - gzip
+      - python3-dev
+      - python3-setuptools
+      - python3-pip
       #  TO-DO: Verify need for the packages below
       # - libgomp
       # - mesa-libGL
       # - glib2-devel
       # - shadow-utils
-    stage-packages:
-      - bash
     override-build: |
 
       mkdir -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist
+      mkdir -p ${CRAFT_PART_INSTALL}/opt/openapi
       cp ${CRAFT_PART_SRC}/setup.py .
+      cp ${CRAFT_PART_SRC}/MANIFEST.in .
       cp ${CRAFT_PART_SRC}/README.md .
 
       ./hack/build-wheels.sh ${CRAFT_PART_INSTALL}/opt/mlserver/dist
 
     override-stage: |
       export ROCK_RUNTIME="xgboost"
-      export PYTHON_VERSION="3.8.13"
-      export CONDA_VERSION="4.13.0"
+      export PYTHON_VERSION="3.8.16"
+      export CONDA_VERSION="22.11.1"
       export RUNTIMES="mlserver_${ROCK_RUNTIME}"
-      export MINIFORGE_VERSION="${CONDA_VERSION}-1"
+      export MINIFORGE_VERSION="${CONDA_VERSION}-4"
       export MLSERVER_PATH=opt/mlserver
       export CONDA_PATH=opt/conda
       export PATH=/opt/mlserver/.local/bin:/opt/conda/bin:$PATH
@@ -69,23 +73,28 @@ parts:
       ln -sf ${CONDA_PATH}/etc/profile.d/conda.sh etc/profile.d/conda.sh
       echo ". ${CONDA_PATH}/etc/profile.d/conda.sh" >> ~/.bashrc
       echo "PATH=${PATH}" >> ~/.bashrc
-      bash -c "${CONDA_PATH}/bin/conda init bash"
+      ${CONDA_PATH}/bin/conda init bash
       echo "conda activate base" >> ~/.bashrc
       chgrp -R root opt/conda && chmod -R g+rw opt/conda
+
+      # install required wheels
+      mkdir -p ${MLSERVER_PATH}
+      mkdir -p ./wheels
+      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver-*.whl ./wheels
+      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_${ROCK_RUNTIME}-*.whl ./wheels
+      # setup pip to be from conda
+      . ${CONDA_PATH}/etc/profile.d/conda.sh
+      pip install --prefix ${MLSERVER_PATH}/.local --upgrade pip wheel setuptools
+      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver-"*.whl)
+      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_${ROCK_RUNTIME}-"*.whl)
+      pip install --prefix ${MLSERVER_PATH}/.local -r ${CRAFT_PART_SRC}/requirements/docker.txt
+      chown -R root:root ${MLSERVER_PATH} && chmod -R 777 ${MLSERVER_PATH}
 
       # conda writes shebangs with its path everywhere, and in crafting, that will be, for example:
       # #!/root/stage/opt/conda/...
       #
       # Snip off the /root/stage part
       bash -c "grep -R -E '/root/stage' opt/ 2>/dev/null | grep -v Bin | awk '{split(\$0,out,\":\"); print out[1]}' | uniq | xargs -I{} sed -i -e 's/\/root\/stage//' {}"
-
-      # install required wheels
-      mkdir -p $MLSERVER_PATH
-      mkdir -p ./wheels
-      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver-*.whl ./wheels
-      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_${ROCK_RUNTIME}-*.whl ./wheels
-      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver-"*.whl)
-      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_${ROCK_RUNTIME}-"*.whl)
 
       # replace first line of mlserver script with reference to installed Conda python
       export CONDA_PYTHON="#\!\/opt\/conda\/bin\/python"
@@ -111,5 +120,5 @@ parts:
     override-build: |
       mkdir -p ${CRAFT_PART_INSTALL}/usr/share/rocks
       (echo "# os-release" && cat /etc/os-release && echo "# dpkg-query" && \
-      dpkg-query --root=${CRAFT_PROJECT_DIR}/../bundles/ubuntu-22.04/rootfs/ -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
+      dpkg-query -f '${db:Status-Abbrev},${binary:Package},${Version},${source:Package},${Source:Version}\n' -W) \
       > ${CRAFT_PART_INSTALL}/usr/share/rocks/dpkg.query
