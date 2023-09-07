@@ -35,8 +35,10 @@ jobs:
           - mlserver-xgboost
           - seldon-core-operator
           - sklearnserver
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rock.yaml@main
-    secrets:
-      JIRA_URL: ${{ secrets.CVE_REPORT_JIRA_URL }}
-    with:
-      rock: ${{ matrix.rock }}
+    steps:
+      - name: Build and scan rock
+        uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rock.yaml@main
+        secrets:
+          JIRA_URL: ${{ secrets.CVE_REPORT_JIRA_URL }}
+        with:
+          rock: ${{ matrix.rock }}
