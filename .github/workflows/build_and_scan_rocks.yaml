@@ -24,7 +24,7 @@ jobs:
           - sklearnserver
     name: Build and scan rock
     uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rock.yaml@feat-rock-common-ci
-      secrets:
-        JIRA_URL: ${{ secrets.CVE_REPORT_JIRA_URL }}
-      with:
-        rock: ${{ matrix.rock }}
+    secrets:
+      JIRA_URL: ${{ secrets.CVE_REPORT_JIRA_URL }}
+    with:
+      rock: ${{ matrix.rock }}
