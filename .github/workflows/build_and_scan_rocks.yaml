@@ -12,7 +12,6 @@ on:
 jobs:
   build-scan-rocks:
     name: Build and scan ROCKs
-    runs-on: ubuntu-20.04
     strategy:
       matrix:
         rock:
@@ -24,6 +23,6 @@ jobs:
           - sklearnserver
     uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_scan_rock.yaml@feat-rock-common-ci
     secrets:
-      JIRA_URL: ${{ secrets.CVE_REPORT_JIRA_URL }}
+       JIRA_URL: ${{ secrets.CVE_REPORT_JIRA_URL }}
     with:
-      rock: ${{ matrix.rock }}
+       rock: ${{ matrix.rock }}
