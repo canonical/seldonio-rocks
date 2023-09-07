@@ -32,7 +32,6 @@ parts:
     source-type: git
     source-tag: 1.3.5
     build-packages:
-      - bash
       - tar
       - gzip
       - python3-dev
@@ -43,12 +42,11 @@ parts:
       # - mesa-libGL
       # - glib2-devel
       # - shadow-utils
-    stage-packages:
-      - bash
     override-build: |
 
       mkdir -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist
       cp ${CRAFT_PART_SRC}/setup.py .
+      cp ${CRAFT_PART_SRC}/MANIFEST.in .
       cp ${CRAFT_PART_SRC}/README.md .
 
       ./hack/build-wheels.sh ${CRAFT_PART_INSTALL}/opt/mlserver/dist
@@ -63,6 +61,7 @@ parts:
 
       # Install Conda, Python 3.8 and FFmpeg
       curl -L -o ~/miniforge3.sh https://github.com/conda-forge/miniforge/releases/download/${MINIFORGE_VERSION}/Miniforge3-${MINIFORGE_VERSION}-Linux-x86_64.sh
+      chmod +x ~/miniforge3.sh
       bash ~/miniforge3.sh -b -u -p ${CONDA_PATH}
       rm ~/miniforge3.sh
       ${CONDA_PATH}/bin/conda install --yes conda=${CONDA_VERSION} python=${PYTHON_VERSION} ffmpeg
@@ -71,7 +70,7 @@ parts:
       ln -sf ${CONDA_PATH}/etc/profile.d/conda.sh etc/profile.d/conda.sh
       echo ". ${CONDA_PATH}/etc/profile.d/conda.sh" >> ~/.bashrc
       echo "PATH=${PATH}" >> ~/.bashrc
-      bash -c "${CONDA_PATH}/bin/conda init bash"
+      ${CONDA_PATH}/bin/conda init bash
       echo "conda activate base" >> ~/.bashrc
       chgrp -R root opt/conda && chmod -R g+rw opt/conda
 
