@@ -1,4 +1,7 @@
 # https://github.com/tensorflow/serving/blob/2.1.0/tensorflow_serving/tools/docker/Dockerfile
+# Upstream uses 2.1.0 but we bumped the version until the ROCK could be built
+# https://github.com/SeldonIO/seldon-core/blob/v1.17.1/operator/config/manager/configmap.yaml#L23-L24
+# See https://github.com/canonical/seldonio-rocks/issues/37#issuecomment-1716074625
 name: tensorflow-serving
 summary: An image for Seldon Tensorflow Serving
 description: |
