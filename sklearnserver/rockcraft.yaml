@@ -1,4 +1,5 @@
-# Based on https://github.com/SeldonIO/seldon-core/tree/master/servers/sklearnserver/sklearnserver
+# Based on https://github.com/SeldonIO/seldon-core/tree/master/servers/sklearnserver
+# Based on https://github.com/SeldonIO/seldon-core/blob/v1.16.0/wrappers/s2i/python/Makefile
 # Based on https://github.com/SeldonIO/seldon-core/blob/v1.16.0/wrappers/s2i/python/Dockerfile.conda
 # Based on https://github.com/SeldonIO/seldon-core/blob/v1.16.0/wrappers/s2i/python/Dockerfile
 name: sklearnserver
