@@ -58,6 +58,8 @@ parts:
       conda activate
       conda activate base
       cd /root/parts/sklearnserver/src/servers/sklearnserver/sklearnserver
+      # Below version should match the source-tag
+      sed -i 's/seldon_core/seldon_core == 1.16.0/g' requirements.txt
       pip install -r requirements.txt
 
       mkdir -p ${PWD}/microservice
