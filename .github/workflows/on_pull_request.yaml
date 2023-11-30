@@ -51,62 +51,62 @@ jobs:
     needs: changes
     if: ${{ needs.changes.outputs.mlserver == 'true' }}
     name: Run Tests
-    uses: ./.github/workflows/integrate.yaml
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
     with:
-      rock: 'mlserver'
+      rock-dir: 'mlserver'
 
   test-mlserver-huggingface:
     needs: changes
     if: ${{ needs.changes.outputs.mlserver-huggingface == 'true' }}
     name: Run Tests
-    uses: ./.github/workflows/integrate.yaml
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
     with:
-      rock: 'mlserver-huggingface'
+      rock-dir: 'mlserver-huggingface'
 
   test-mlserver-mlflow:
     needs: changes
     if: ${{ needs.changes.outputs.mlserver-mlflow == 'true' }}
     name: Run Tests
-    uses: ./.github/workflows/integrate.yaml
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
     with:
-      rock: 'mlserver-mlflow'
+      rock-dir: 'mlserver-mlflow'
 
   test-mlserver-sklearn:
     needs: changes
     if: ${{ needs.changes.outputs.mlserver-sklearn == 'true' }}
     name: Run Tests
-    uses: ./.github/workflows/integrate.yaml
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
     with:
-      rock: 'mlserver-sklearn'
+      rock-dir: 'mlserver-sklearn'
 
   test-mlserver-xgboost:
     needs: changes
     if: ${{ needs.changes.outputs.mlserver-xgboost == 'true' }}
     name: Run Tests
-    uses: ./.github/workflows/integrate.yaml
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
     with:
-      rock: 'mlserver-xgboost'
+      rock-dir: 'mlserver-xgboost'
 
   test-seldon-core-operator:
     needs: changes
     if: ${{ needs.changes.outputs.seldon-core-operator == 'true' }}
     name: Run Tests
-    uses: ./.github/workflows/integrate.yaml
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
     with:
-      rock: 'seldon-core-operator'
+      rock-dir: 'seldon-core-operator'
 
   test-sklearnserver:
     needs: changes
     if: ${{ needs.changes.outputs.sklearnserver == 'true' }}
     name: Run Tests
-    uses: ./.github/workflows/integrate.yaml
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
     with:
-      rock: 'sklearnserver'
+      rock-dir: 'sklearnserver'
 
   test-tensorflow-serving:
     needs: changes
     if: ${{ needs.changes.outputs.tensorflow-serving == 'true' }}
     name: Run Tests
-    uses: ./.github/workflows/integrate.yaml
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
     with:
-      rock: 'tensorflow-serving'
+      rock-dir: 'tensorflow-serving'
