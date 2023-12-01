@@ -43,7 +43,7 @@ jobs:
           filters: ${{ needs.get-all-rock-paths.outputs.paths}}
 
   build-scan-test-rock:
-    name: Build, scan and test ${{ matrix.rock-dir }} ROCK
+    name: Build, scan and test ROCKs
     needs: changes
     strategy:
       fail-fast: false
