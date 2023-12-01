@@ -1,112 +1,11 @@
 name: On Pull Request
 
-# On pull_request, we:
-# * always build the rocks
-# * always run tests
-
 on:
   pull_request:
 
 jobs:
-  # JOB to run change detection
-  changes:
-    runs-on: ubuntu-22.04
-    # Required permissions
-    permissions:
-      pull-requests: read
-    # Set job outputs to values from filter step
-    outputs:
-      mlserver: ${{ steps.filter.outputs.mlserver }}
-      mlserver-huggingface: ${{ steps.filter.outputs.mlserver-huggingface }}
-      mlserver-mlflow: ${{ steps.filter.outputs.mlserver-mlflow }}
-      mlserver-sklearn: ${{ steps.filter.outputs.mlserver-sklearn }}
-      mlserver-xgboost: ${{ steps.filter.outputs.mlserver-xgboost }}
-      seldon-core-operator: ${{ steps.filter.outputs.seldon-core-operator }}
-      sklearnserver: ${{ steps.filter.outputs.sklearnserver }}
-      tensorflow-serving: ${{ steps.filter.outputs.tensorflow-serving }}
-    steps:
-    # For pull requests it's not necessary to checkout the code
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: |
-          mlserver:
-            - 'mlserver/**'
-          mlserver-huggingface:
-            - 'mlserver-huggingface/**'
-          mlserver-mlflow:
-            - 'mlserver-mlflow/**'
-          mlserver-sklearn:
-            - 'mlserver-sklearn/**'
-          mlserver-xgboost:
-            - 'mlserver-xgboost/**'
-          seldon-core-operator:
-            - 'seldon-core-operator/**'
-          sklearnserver:
-            - 'sklearnserver/**'
-          tensorflow-serving:
-            - 'tensorflow-serving/**'
 
-  test-mlserver:
-    needs: changes
-    if: ${{ needs.changes.outputs.mlserver == 'true' }}
-    name: Run Tests
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
-    with:
-      rock-dir: 'mlserver'
-
-  test-mlserver-huggingface:
-    needs: changes
-    if: ${{ needs.changes.outputs.mlserver-huggingface == 'true' }}
-    name: Run Tests
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
-    with:
-      rock-dir: 'mlserver-huggingface'
-
-  test-mlserver-mlflow:
-    needs: changes
-    if: ${{ needs.changes.outputs.mlserver-mlflow == 'true' }}
-    name: Run Tests
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
-    with:
-      rock-dir: 'mlserver-mlflow'
-
-  test-mlserver-sklearn:
-    needs: changes
-    if: ${{ needs.changes.outputs.mlserver-sklearn == 'true' }}
-    name: Run Tests
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
-    with:
-      rock-dir: 'mlserver-sklearn'
-
-  test-mlserver-xgboost:
-    needs: changes
-    if: ${{ needs.changes.outputs.mlserver-xgboost == 'true' }}
-    name: Run Tests
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
-    with:
-      rock-dir: 'mlserver-xgboost'
-
-  test-seldon-core-operator:
-    needs: changes
-    if: ${{ needs.changes.outputs.seldon-core-operator == 'true' }}
-    name: Run Tests
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
-    with:
-      rock-dir: 'seldon-core-operator'
-
-  test-sklearnserver:
-    needs: changes
-    if: ${{ needs.changes.outputs.sklearnserver == 'true' }}
-    name: Run Tests
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
-    with:
-      rock-dir: 'sklearnserver'
-
-  test-tensorflow-serving:
-    needs: changes
-    if: ${{ needs.changes.outputs.tensorflow-serving == 'true' }}
-    name: Run Tests
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@main
-    with:
-      rock-dir: 'tensorflow-serving'
+  get-rocks-modified-and-build-scan-test:
+    name: Get ROCKs modified and build-scan-test them
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/get_rocks_modified_and_build_scan_test.yaml@main
+    secrets: inherit

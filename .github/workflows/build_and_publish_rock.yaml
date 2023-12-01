@@ -1,4 +1,4 @@
-# reusable workflow for publishing all charms in this repo
+# reusable workflow for publishing a ROCK
 name: Build and publish rock
 
 on:
