@@ -1,11 +1,11 @@
-name: Get ROCKs modified and run integration workflow
+name: Get ROCKs modified and run build-scan-test workflow
 
 # On pull_request, we:
 # * always build the rocks
 # * always run tests
 
 on:
-  on_pull_request:
+  pull_request:
 
 jobs:
   get-all-rock-paths:
@@ -14,11 +14,18 @@ jobs:
     outputs:
       paths: ${{ steps.find.outputs.paths}}
     steps:
+      - name: Checkout repository code
+        uses: actions/checkout@v3
       - name: Get all rockcraft.yaml paths using find
         id: find
         run: |
           paths=$(find ./ -name "rockcraft.yaml" -printf "%h:\n  - '%h/**'\n" | sed 's/\.\///g')
-          echo "paths=${paths}" >> $GITHUB_OUTPUT
+          echo "Paths found:"
+          echo "${paths}"
+          # Passing multi-line string to output requires the use of a delimiter
+          echo "paths<<EOF" >> $GITHUB_OUTPUT
+          echo "${paths}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
   changes:
     name: Get paths for ROCKs affected by PR
@@ -28,21 +35,20 @@ jobs:
       pull-requests: read
     # Set job outputs to values from filter step
     outputs:
-      rock-paths: $ {{ steps.filters.outputs.changes }}
+      rock_paths: ${{ steps.filter.outputs.changes }}
     steps:
-    # For pull requests it's not necessary to checkout the code
-    - uses: dorny/paths-filter@v2
-      id: filter
-      with:
-        filters: ${{ needs.get-all-rock-paths.outputs.paths}}
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: ${{ needs.get-all-rock-paths.outputs.paths}}
 
-  test-rock:
-    name: Integrate workflow for ${{ matrix.rock-dir }}
+  build-scan-test-rock:
+    name: Build, scan and test ${{ matrix.rock-dir }} ROCK
     needs: changes
-    runs-on: ubuntu-22.04
     strategy:
+      fail-fast: false
       matrix:
-        rock-dir: ${{ fromJson(needs.changes.outputs.rock-paths)}}
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/integrate_rock.yaml@kf-5024-feat-integrate-rock
+        rock-dir: ${{ fromJson(needs.changes.outputs.rock_paths) }}
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_scan_and_test_rock.yaml@kf-5024-feat-integrate-rock
     with:
       rock-dir: ${{ matrix.rock-dir }}
