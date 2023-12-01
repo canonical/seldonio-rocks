@@ -24,7 +24,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
   changes:
-    name: Get paths for ROCKs affected by PR
+    name: Get paths for ROCKs modified by PR
     needs: get-all-rock-paths
     runs-on: ubuntu-22.04
     permissions:
