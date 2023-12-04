@@ -4,48 +4,21 @@ on:
   pull_request:
 
 jobs:
-  get-all-rock-paths:
-    name: Get all rockcraft.yaml paths
-    runs-on: ubuntu-22.04
-    outputs:
-      paths: ${{ steps.find.outputs.paths}}
-    steps:
-      - name: Checkout repository code
-        uses: actions/checkout@v3
-      - name: Get all rockcraft.yaml paths using find
-        id: find
-        run: |
-          paths=$(find ./ -name "rockcraft.yaml" -printf "%h:\n  - '%h/**'\n" | sed 's/\.\///g')
-          echo "Paths found:"
-          echo "${paths}"
-          # Passing multi-line string to output requires the use of a delimiter
-          echo "paths<<EOF" >> $GITHUB_OUTPUT
-          echo "${paths}" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-  changes:
-    name: Get paths for ROCKs modified by PR
-    needs: get-all-rock-paths
-    runs-on: ubuntu-22.04
-    permissions:
-      pull-requests: read
-    # Set job outputs to values from filter step
-    outputs:
-      rock_paths: ${{ steps.filter.outputs.changes }}
-    steps:
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: ${{ needs.get-all-rock-paths.outputs.paths}}
+  get-rock-paths-modified:
+    name: Get rockcraft paths modified
+    uses: ./.github/workflows/get_rocks_modified.yaml
 
   build-scan-test-rock:
     name: Build, scan and test
-    needs: changes
+    needs: get-rock-paths-modified
     strategy:
       fail-fast: false
       matrix:
-        rock-dir: ${{ fromJson(needs.changes.outputs.rock_paths) }}
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_scan_and_test_rock.yaml@kf-5024-feat-integrate-rock
+        rock-dir: ${{ fromJson(needs.get-rock-paths-modified.outputs.paths) }}
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_scan_and_test_rock.yaml@main
     secrets: inherit
     with:
       rock-dir: ${{ matrix.rock-dir }}
+      microk8s-channel: "1.26/stable"
+      juju-channel: "3.1/stable"
+
