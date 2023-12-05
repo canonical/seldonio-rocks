@@ -7,9 +7,9 @@ summary: An image for Seldon SKLearn Server
 description: |
   This image is used as part of the Charmed Kubeflow product. The SKLearn Server serves
   models which have been stored as pickles.
-version: v1.16.0_20.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
+version: v1.16.0-20.04-1 # <upstream-version>_<base-version>_<Charmed-KF-version>
 license: Apache-2.0
-base: ubuntu:20.04
+base: ubuntu@20.04
 run-user: _daemon_
 services:
   sklearnserver:
