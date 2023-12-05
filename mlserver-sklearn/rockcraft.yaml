@@ -3,9 +3,9 @@ name: mlserver-sklearn
 summary: An image for Seldon MLServer SKLearn
 description: |
   This image is used as part of the Charmed Kubeflow product.
-version: 1.2.0-22.04-1 # <upstream-version>_<base-version>_<Charmed-KF-version>
+version: 1.2.0_22.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
 license: Apache-2.0
-base: ubuntu@22.04
+base: ubuntu:22.04
 run-user: _daemon_
 services:
   mlserver-sklearn:

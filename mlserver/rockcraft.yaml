@@ -5,9 +5,9 @@ name: mlserver
 summary: An image for Seldon MLServer Huggingface
 description: |
   This image is used as part of the Charmed Kubeflow product.
-version: 1.3.5-20.04-1 # <upstream-version>_<base-version>_<Charmed-KF-version>
+version: 1.3.5_20.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
 license: Apache-2.0
-base: ubuntu@20.04
+base: ubuntu:20.04
 run-user: _daemon_
 services:
   mlserver:
