@@ -33,14 +33,13 @@ def test_rock(ops_test: OpsTest, rock_test_env):
     """Test rock."""
     temp_dir, container_name = rock_test_env
     check_rock = CheckRock("rockcraft.yaml")
-    rock_image = check_rock.get_image_name()
+    rock_image = check_rock.get_name()
     rock_version = check_rock.get_version()
-    LOCAL_ROCK_IMAGE = f"{check_rock.get_image_name()}:{check_rock.get_version()}"
+    LOCAL_ROCK_IMAGE = f"{rock_image}:{rock_version}"
 
-    # TO-DO uncomment when updated chisme is published
-    #rock_services = check_rock.get_services()
-    #assert rock_services["mlserver-huggingface"]
-    #assert rock_services["mlserver-huggingface"]["startup"] == "enabled"
+    rock_services = check_rock.get_services()
+    assert rock_services["mlserver-huggingface"]
+    assert rock_services["mlserver-huggingface"]["startup"] == "enabled"
 
     # create ROCK filesystem
     subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/lib/python3.8/site-packages/mlserver"], check=True)
