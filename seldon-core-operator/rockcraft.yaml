@@ -10,7 +10,7 @@ description: |
   Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests,
   Canaries and more.
 
-version: v1.15.0 # version format: <
+version: v1.15.0 # version format: asda<
 license: Apache-2.0
 build-base: ubuntu@22.04
 base: bare
