@@ -35,11 +35,6 @@ parts:
       - python3-setuptools
       - python3-pip
       - python-is-python3
-      #  TO-DO: Verify need for the packages below
-      # - libgomp
-      # - mesa-libGL
-      # - glib2-devel
-      # - shadow-utils
     override-build: |
 
       mkdir -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist
