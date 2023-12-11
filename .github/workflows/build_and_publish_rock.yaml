@@ -30,9 +30,9 @@ on:
 jobs:
   build-publish-rock:
     name: Build and publish ROCK
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_publish_rock.yaml@main
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/build_and_publish_rock.yaml@test-reusable-workflows
     with:
-      rockcraft-dir: ${{ inputs.rockcraft-dir }}
+      rock-dir: ${{ inputs.rockcraft-dir }}
       source-branch: ${{ inputs.source-branch }}
     secrets:
       DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
