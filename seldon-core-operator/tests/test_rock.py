@@ -33,7 +33,7 @@ def test_rock(rock_test_env):
     """Test rock."""
     temp_dir, container_name = rock_test_env
     check_rock = CheckRock("rockcraft.yaml")
-    rock_image = check_rock.get_image_name()
+    rock_image = check_rock.get_name()
     rock_version = check_rock.get_version()
 
     rockfs_tar = temp_dir.join("rockfs.tar")
