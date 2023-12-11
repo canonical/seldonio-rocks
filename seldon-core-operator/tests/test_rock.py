@@ -14,7 +14,6 @@ import pytest
 import string
 import subprocess
 import yaml
-from pytest_operator.plugin import OpsTest
 from charmed_kubeflow_chisme.rock import CheckRock
 
 @pytest.fixture()
@@ -30,7 +29,7 @@ def rock_test_env(tmpdir):
     # tmpdir fixture we use here should clean up the other files for us
 
 @pytest.mark.abort_on_fail
-def test_rock(ops_test: OpsTest, rock_test_env):
+def test_rock(rock_test_env):
     """Test rock."""
     temp_dir, container_name = rock_test_env
     check_rock = CheckRock("rockcraft.yaml")
