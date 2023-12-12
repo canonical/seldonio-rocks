@@ -13,7 +13,6 @@ import string
 import subprocess
 import yaml
 
-from pytest_operator.plugin import OpsTest
 from charmed_kubeflow_chisme.rock import CheckRock
 
 @pytest.fixture()
@@ -29,18 +28,17 @@ def rock_test_env(tmpdir):
     # tmpdir fixture we use here should clean up the other files for us
 
 @pytest.mark.abort_on_fail
-def test_rock(ops_test: OpsTest, rock_test_env):
+def test_rock(rock_test_env):
     """Test rock."""
     temp_dir, container_name = rock_test_env
     check_rock = CheckRock("rockcraft.yaml")
-    rock_image = check_rock.get_image_name()
+    rock_image = check_rock.get_name()
     rock_version = check_rock.get_version()
-    LOCAL_ROCK_IMAGE = f"{check_rock.get_image_name()}:{check_rock.get_version()}"
+    LOCAL_ROCK_IMAGE = f"{rock_image}:{rock_version}"
 
-    # TO-DO uncomment when updated chisme is published
-    #rock_services = check_rock.get_services()
-    #assert rock_services["mlserver-mlflow"]
-    #assert rock_services["mlserver-mlflow"]["startup"] == "enabled"
+    rock_services = check_rock.get_services()
+    assert rock_services["mlserver-mlflow"]
+    assert rock_services["mlserver-mlflow"]["startup"] == "enabled"
 
     # create ROCK filesystem
     subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/lib/python3.8/site-packages/mlserver"], check=True)
