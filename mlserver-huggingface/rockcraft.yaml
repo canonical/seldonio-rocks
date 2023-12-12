@@ -14,7 +14,8 @@ services:
     startup: enabled
     # Do not split command in many lines using `\` because this results in 
     # export: command not found error during container startup
-    command: bash -c 'cd /opt/mlserver && export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}:/usr/bin && export PYTHONPATH=/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH} && eval $(/opt/conda/bin/conda shell.bash hook 2> /dev/null) && source /hack/activate-env.sh ${MLSERVER_ENV_TARBALL} && mlserver start ${MLSERVER_MODELS_DIR}'
+    command: bash -c 'export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}:/usr/bin && export PYTHONPATH=/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH} && eval $(/opt/conda/bin/conda shell.bash hook 2> /dev/null) && source /hack/activate-env.sh ${MLSERVER_ENV_TARBALL} && mlserver start ${MLSERVER_MODELS_DIR}'
+    working-dir: "/opt/mlserver"
     environment:
       MLSERVER_ENV_TARBALL: "/mnt/models/environment.tar.gz"
       MLSERVER_MODELS_DIR: "/mnt/models/"
