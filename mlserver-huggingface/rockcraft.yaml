@@ -1,4 +1,5 @@
 # Based on https://github.com/SeldonIO/MLServer/blob/1.2.0/Dockerfile
+# comment
 name: mlserver-huggingface
 summary: An image for Seldon MLServer Huggingface
 description: |
