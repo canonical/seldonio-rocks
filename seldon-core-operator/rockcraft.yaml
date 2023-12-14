@@ -9,7 +9,7 @@ description: |
   provides advanced machine learning capabilities out of the box including
   Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests,
   Canaries and more.
-
+#trigger
 version: 1.15.0
 license: Apache-2.0
 build-base: ubuntu@22.04
