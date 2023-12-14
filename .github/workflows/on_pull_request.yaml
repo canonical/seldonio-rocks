@@ -7,8 +7,11 @@ jobs:
 
   get-rocks-modified-and-build-scan-test:
     name: Get ROCKs modified and build-scan-test them
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/get_rocks_modified_and_build_scan_test.yaml@main
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/get-rocks-modified-and-build-scan-test-publish.yaml@split-build-scan-test-to-smaller-workflows
+    permissions:
+      pull-requests: read
     secrets: inherit
     with:
       microk8s-channel: 1.24/stable
       juju-channel: 2.9/stable
+      python-version: "3.8"
