@@ -37,7 +37,8 @@ def test_rock(rock_test_env):
     rock_version = check_rock.get_version()
     LOCAL_ROCK_IMAGE = f"{rock_image}:{rock_version}"
 
-    rockfs_tar = temp_dir.join("rockfs.tar")
+    # rockfs_tar = temp_dir.join("rockfs.tar")
+    rockfs_tar = "rockfs.tar"
     rockfs_dir = temp_dir.mkdir("rockfs")
 
     # verify that ROCK service matches charm service
@@ -59,3 +60,5 @@ def test_rock(rock_test_env):
     assert "configmap.yaml" in files
     assert "validate.yaml" in files
     assert "crd-v1.yaml" in files
+
+    subprocess.run(["rm",rockfs_tar], check=True)
