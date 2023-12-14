@@ -1,15 +1,15 @@
 # Based on https://github.com/SeldonIO/seldon-core/tree/master/servers/sklearnserver
-# Based on https://github.com/SeldonIO/seldon-core/blob/v1.16.0/wrappers/s2i/python/Makefile
-# Based on https://github.com/SeldonIO/seldon-core/blob/v1.16.0/wrappers/s2i/python/Dockerfile.conda
-# Based on https://github.com/SeldonIO/seldon-core/blob/v1.16.0/wrappers/s2i/python/Dockerfile
+# Based on https://github.com/SeldonIO/seldon-core/blob/v1.17.1/wrappers/s2i/python/Makefile
+# Based on https://github.com/SeldonIO/seldon-core/blob/v1.17.1/wrappers/s2i/python/Dockerfile
+# Based on https://github.com/SeldonIO/seldon-core/blob/v1.17.1/wrappers/s2i/python/Dockerfile.conda
 name: sklearnserver
 summary: An image for Seldon SKLearn Server
 description: |
   This image is used as part of the Charmed Kubeflow product. The SKLearn Server serves
   models which have been stored as pickles.
-version: v1.16.0_20.04_1 # <upstream-version>_<base-version>_<Charmed-KF-version>
+version: 1.17.1
 license: Apache-2.0
-base: ubuntu:20.04
+base: ubuntu@20.04
 run-user: _daemon_
 services:
   sklearnserver:
@@ -34,10 +34,10 @@ parts:
     plugin: nil
     source: https://github.com/SeldonIO/seldon-core
     source-type: git
-    source-tag: v1.16.0
+    source-tag: v1.17.1
     override-stage: |
-      export CONDA_DOWNLOAD_VERSION="py38_4.12.0"
-      export CONDA_VERSION="4.13.0"
+      export CONDA_DOWNLOAD_VERSION="py38_23.3.1-0"
+      export CONDA_VERSION="23.5.0"
       curl -L -o certifi-python-certifi.tar.gz https://github.com/certifi/python-certifi/archive/master.tar.gz
       curl -L -o ~/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_DOWNLOAD_VERSION}-Linux-x86_64.sh
       bash ~/miniconda.sh -b -u -p opt/conda
