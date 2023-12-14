@@ -1,4 +1,5 @@
 name: seldon-core-operator
+# comment
 summary: Convert your ML models or language wrappers into microservices
 description: |
   Seldon core converts your ML models (Tensorflow, Pytorch, H2o, etc.) or
