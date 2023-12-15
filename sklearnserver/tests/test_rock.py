@@ -14,13 +14,12 @@ import pytest
 import string
 import subprocess
 import yaml
-from pytest_operator.plugin import OpsTest
 
 @pytest.fixture()
-def rock_test_env():
+def rock_test_env(tmpdir):
     """Yields a temporary directory and random docker container name, then cleans them up after."""
     container_name = "".join([str(i) for i in random.choices(string.ascii_lowercase, k=8)])
-    yield container_name
+    yield tmpdir, container_name
 
     try:
         subprocess.run(["docker", "rm", container_name])
@@ -28,11 +27,13 @@ def rock_test_env():
         pass
 
 @pytest.mark.abort_on_fail
-def test_rock(ops_test: OpsTest, rock_test_env):
+def test_rock(rock_test_env):
     """Test rock."""
+    temp_dir, container_name = rock_test_env
     check_rock = CheckRock("rockcraft.yaml")
-    container_name = rock_test_env
-    LOCAL_ROCK_IMAGE = f"{check_rock.get_image_name()}:{check_rock.get_version()}"
+    rock_image = check_rock.get_name()
+    rock_version = check_rock.get_version()
+    LOCAL_ROCK_IMAGE = f"{rock_image}:{rock_version}"
 
     # verify that all artifacts are in correct locations
     subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/microservice/SKLearnServer.py"], check=True)
