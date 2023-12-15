@@ -14,7 +14,6 @@ import pytest
 import string
 import subprocess
 import yaml
-from pytest_operator.plugin import OpsTest
 from charmed_kubeflow_chisme.rock import CheckRock
 
 @pytest.fixture()
@@ -30,14 +29,16 @@ def rock_test_env(tmpdir):
     # tmpdir fixture we use here should clean up the other files for us
 
 @pytest.mark.abort_on_fail
-def test_rock(ops_test: OpsTest, rock_test_env):
+def test_rock(rock_test_env):
     """Test rock."""
     temp_dir, container_name = rock_test_env
     check_rock = CheckRock("rockcraft.yaml")
-    rock_image = check_rock.get_image_name()
+    rock_image = check_rock.get_name()
     rock_version = check_rock.get_version()
+    LOCAL_ROCK_IMAGE = f"{rock_image}:{rock_version}"
 
-    rockfs_tar = temp_dir.join("rockfs.tar")
+    # rockfs_tar = temp_dir.join("rockfs.tar")
+    rockfs_tar = "rockfs.tar"
     rockfs_dir = temp_dir.mkdir("rockfs")
 
     # verify that ROCK service matches charm service
@@ -46,7 +47,7 @@ def test_rock(ops_test: OpsTest, rock_test_env):
     assert rock_services["seldon-core"]["startup"] == "enabled"
 
     # create ROCK filesystem
-    subprocess.run(["docker", "create", f"--name={container_name}", f"{rock_image}:{rock_version}"])
+    subprocess.run(["docker", "create", f"--name={container_name}", LOCAL_ROCK_IMAGE])
     subprocess.run(["docker", "export", f"{container_name}", "--output", rockfs_tar], check=True)
     subprocess.run(["tar", "xvf", rockfs_tar, "-C", rockfs_dir], check=True)
 
@@ -59,3 +60,5 @@ def test_rock(ops_test: OpsTest, rock_test_env):
     assert "configmap.yaml" in files
     assert "validate.yaml" in files
     assert "crd-v1.yaml" in files
+
+    subprocess.run(["rm",rockfs_tar], check=True)

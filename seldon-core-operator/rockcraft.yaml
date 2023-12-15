@@ -1,3 +1,4 @@
+# Based on https://github.com/SeldonIO/seldon-core/blob/v1.17.1/operator/Dockerfile
 name: seldon-core-operator
 summary: Convert your ML models or language wrappers into microservices
 description: |
@@ -9,10 +10,9 @@ description: |
   provides advanced machine learning capabilities out of the box including
   Advanced Metrics, Request Logging, Explainers, Outlier Detectors, A/B Tests,
   Canaries and more.
-
-version: v1.15.0_22.04_1 # version format: <KF-upstream-version>_<base-version>_<Charmed-KF-version>
+version: 1.17.1
 license: Apache-2.0
-build-base: ubuntu:22.04
+build-base: ubuntu@22.04
 base: bare
 run-user: _daemon_
 services:
@@ -29,7 +29,7 @@ parts:
     plugin: go
     source: https://github.com/SeldonIO/seldon-core
     source-type: git
-    source-tag: v1.15.0
+    source-tag: v1.17.1
     build-snaps:
       - go
       - kustomize/latest/stable
