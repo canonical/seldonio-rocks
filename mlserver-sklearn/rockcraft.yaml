@@ -18,7 +18,7 @@ services:
     working-dir: "/opt/mlserver"
     environment:
       MLSERVER_ENV_TARBALL: "/mnt/models/environment.tar.gz"
-      MLSERVER_MODELS_DIR: "/mnt/models"
+      MLSERVER_MODELS_DIR: "/mnt/models/"
       LD_LIBRARY_PATH: "/usr/local/nvidia/lib64:/opt/conda/lib/python3.8/site-packages/nvidia/cuda_runtime/lib:$LD_LIBRARY_PATH"
       TRANSFORMERS_CACHE: "/opt/mlserver/.cache"
       NUMBA_CACHE_DIR: "/opt/mlserver/.cache"
