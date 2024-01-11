@@ -76,6 +76,8 @@ parts:
       pip install --prefix ${MLSERVER_PATH}/.local --upgrade pip wheel setuptools
       pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver-"*.whl)
       pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_${ROCK_RUNTIME}-"*.whl)
+      # Pin starlette due to https://github.com/canonical/seldonio-rocks/issues/80
+      echo starlette==0.22.0 >> ${CRAFT_PART_SRC}/requirements/docker.txt
       pip install --prefix ${MLSERVER_PATH}/.local -r ${CRAFT_PART_SRC}/requirements/docker.txt
       chown -R root:root ${MLSERVER_PATH} && chmod -R 777 ${MLSERVER_PATH}
 
