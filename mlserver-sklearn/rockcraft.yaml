@@ -40,10 +40,6 @@ parts:
 
       mkdir -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist
       mkdir -p ${CRAFT_PART_INSTALL}/opt/openapi
-      cp ${CRAFT_PART_SRC}/setup.py .
-      cp ${CRAFT_PART_SRC}/MANIFEST.in .
-      cp ${CRAFT_PART_SRC}/README.md .
-
       ./hack/build-wheels.sh ${CRAFT_PART_INSTALL}/opt/mlserver/dist
 
     override-stage: |
