@@ -14,7 +14,7 @@ services:
     startup: enabled
     # Do not split command in many lines using `\` because this results in 
     # export: command not found error during container startup
-    command: bash -c 'export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}:/usr/bin && export PYTHONPATH=/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH} && eval $(/opt/conda/bin/conda shell.bash hook 2> /dev/null) && source /hack/activate-env.sh ${MLSERVER_ENV_TARBALL} && mlserver start ${MLSERVER_MODELS_DIR}'
+    command: bash -c 'export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}:/usr/bin && export PYTHONPATH=/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH} && eval $(/opt/conda/bin/conda shell.bash hook 2> /dev/null) && mlserver start ${MLSERVER_MODELS_DIR}'
     working-dir: "/opt/mlserver"
     environment:
       MLSERVER_ENV_TARBALL: "/mnt/models/environment.tar.gz"
@@ -40,10 +40,6 @@ parts:
 
       mkdir -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist
       mkdir -p ${CRAFT_PART_INSTALL}/opt/openapi
-      cp ${CRAFT_PART_SRC}/setup.py .
-      cp ${CRAFT_PART_SRC}/MANIFEST.in .
-      cp ${CRAFT_PART_SRC}/README.md .
-
       ./hack/build-wheels.sh ${CRAFT_PART_INSTALL}/opt/mlserver/dist
 
     override-stage: |
@@ -80,6 +76,8 @@ parts:
       pip install --prefix ${MLSERVER_PATH}/.local --upgrade pip wheel setuptools
       pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver-"*.whl)
       pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_${ROCK_RUNTIME}-"*.whl)
+      # Pin starlette due to https://github.com/canonical/seldonio-rocks/issues/80
+      echo starlette==0.22.0 >> ${CRAFT_PART_SRC}/requirements/docker.txt
       pip install --prefix ${MLSERVER_PATH}/.local -r ${CRAFT_PART_SRC}/requirements/docker.txt
       chown -R root:root ${MLSERVER_PATH} && chmod -R 777 ${MLSERVER_PATH}
 
