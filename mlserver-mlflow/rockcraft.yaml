@@ -12,11 +12,13 @@ services:
     override: replace
     summary: "mlserver-mlflow service"
     startup: enabled
+    # Do not split command in many lines using `\` because this results in
+    # export: command not found error during container startup
     command: bash -c 'export PATH=/opt/conda/bin/:/opt/mlserver/.local/bin:${PATH}:/usr/bin && export PYTHONPATH=/opt/mlserver/.local/lib/python3.8/site-packages/:${PYTHONPATH} && eval $(/opt/conda/bin/conda shell.bash hook 2> /dev/null) && mlserver start ${MLSERVER_MODELS_DIR}'
     working-dir: "/opt/mlserver"
     environment:
       MLSERVER_ENV_TARBALL: "/mnt/models/environment.tar.gz"
-      MLSERVER_MODELS_DIR: "/mnt/models/"
+      MLSERVER_MODELS_DIR: "/mnt/models"
       LD_LIBRARY_PATH: "/usr/local/nvidia/lib64:/opt/conda/lib/python3.8/site-packages/nvidia/cuda_runtime/lib:$LD_LIBRARY_PATH"
       TRANSFORMERS_CACHE: "/opt/mlserver/.cache"
       NUMBA_CACHE_DIR: "/opt/mlserver/.cache"
@@ -38,10 +40,6 @@ parts:
 
       mkdir -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist
       mkdir -p ${CRAFT_PART_INSTALL}/opt/openapi
-      cp ${CRAFT_PART_SRC}/setup.py .
-      cp ${CRAFT_PART_SRC}/MANIFEST.in .
-      cp ${CRAFT_PART_SRC}/README.md .
-
       ./hack/build-wheels.sh ${CRAFT_PART_INSTALL}/opt/mlserver/dist
 
     override-stage: |
