@@ -19,6 +19,7 @@ services:
     environment:
       MODEL_NAME: "model"
       MODEL_BASE_PATH: "/models"
+entrypoint-service: tensorflow-serving
 platforms:
   amd64:
 
