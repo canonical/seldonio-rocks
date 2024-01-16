@@ -7,11 +7,12 @@ jobs:
 
   on-pull-request:
     name: Get ROCKs modified and build-scan-test them
-    uses: canonical/charmed-kubeflow-workflows/.github/workflows/get-rocks-modified-and-build-scan-test-publish.yaml@main
+    uses: canonical/charmed-kubeflow-workflows/.github/workflows/get-rocks-modified-and-build-scan-test-publish.yaml@add-rockcraft-channel-option-build-rock
     permissions:
       pull-requests: read
     secrets: inherit
     with:
+      rockcraft-channel: latest/edge
       microk8s-channel: 1.26-strict/stable
       juju-channel: 3.1/stable
       python-version: "3.8"
