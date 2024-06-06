@@ -43,10 +43,10 @@ parts:
       ./hack/build-wheels.sh ${CRAFT_PART_INSTALL}/opt/mlserver/dist
 
     override-stage: |
-      export ROCK_RUNTIME="xgboost"
+      export rock_RUNTIME="xgboost"
       export PYTHON_VERSION="3.8.16"
       export CONDA_VERSION="22.11.1"
-      export RUNTIMES="mlserver_${ROCK_RUNTIME}"
+      export RUNTIMES="mlserver_${rock_RUNTIME}"
       export MINIFORGE_VERSION="${CONDA_VERSION}-4"
       export MLSERVER_PATH=opt/mlserver
       export CONDA_PATH=opt/conda
@@ -70,12 +70,12 @@ parts:
       mkdir -p ${MLSERVER_PATH}
       mkdir -p ./wheels
       cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver-*.whl ./wheels
-      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_${ROCK_RUNTIME}-*.whl ./wheels
+      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_${rock_RUNTIME}-*.whl ./wheels
       # setup pip to be from conda
       . ${CONDA_PATH}/etc/profile.d/conda.sh
       pip install --prefix ${MLSERVER_PATH}/.local --upgrade pip wheel setuptools
       pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver-"*.whl)
-      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_${ROCK_RUNTIME}-"*.whl)
+      pip install --prefix ${MLSERVER_PATH}/.local $(ls "./wheels/mlserver_${rock_RUNTIME}-"*.whl)
       # Pin starlette due to https://github.com/canonical/seldonio-rocks/issues/80
       echo starlette==0.22.0 >> ${CRAFT_PART_SRC}/requirements/docker.txt
       pip install --prefix ${MLSERVER_PATH}/.local -r ${CRAFT_PART_SRC}/requirements/docker.txt
