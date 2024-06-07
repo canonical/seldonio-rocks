@@ -34,12 +34,12 @@ def test_rock(rock_test_env):
     check_rock = CheckRock("rockcraft.yaml")
     rock_image = check_rock.get_name()
     rock_version = check_rock.get_version()
-    LOCAL_rock_IMAGE = f"{rock_image}:{rock_version}"
+    LOCAL_ROCK_IMAGE = f"{rock_image}:{rock_version}"
 
     rock_services = check_rock.get_services()
     assert rock_services["mlserver-xgboost"]
     assert rock_services["mlserver-xgboost"]["startup"] == "enabled"
 
     # create rock filesystem
-    subprocess.run(["docker", "run", LOCAL_rock_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/lib/python3.8/site-packages/mlserver"], check=True)
-    subprocess.run(["docker", "run", LOCAL_rock_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/bin/mlserver"], check=True)
+    subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/lib/python3.8/site-packages/mlserver"], check=True)
+    subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/bin/mlserver"], check=True)

@@ -35,7 +35,7 @@ def test_rock(rock_test_env):
     check_rock = CheckRock("rockcraft.yaml")
     rock_image = check_rock.get_name()
     rock_version = check_rock.get_version()
-    LOCAL_rock_IMAGE = f"{rock_image}:{rock_version}"
+    LOCAL_ROCK_IMAGE = f"{rock_image}:{rock_version}"
 
     # rockfs_tar = temp_dir.join("rockfs.tar")
     rockfs_tar = "rockfs.tar"
@@ -47,7 +47,7 @@ def test_rock(rock_test_env):
     assert rock_services["seldon-core"]["startup"] == "enabled"
 
     # create rock filesystem
-    subprocess.run(["docker", "create", f"--name={container_name}", LOCAL_rock_IMAGE])
+    subprocess.run(["docker", "create", f"--name={container_name}", LOCAL_ROCK_IMAGE])
     subprocess.run(["docker", "export", f"{container_name}", "--output", rockfs_tar], check=True)
     subprocess.run(["tar", "xvf", rockfs_tar, "-C", rockfs_dir], check=True)
 

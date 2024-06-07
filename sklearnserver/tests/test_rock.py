@@ -33,10 +33,10 @@ def test_rock(rock_test_env):
     check_rock = CheckRock("rockcraft.yaml")
     rock_image = check_rock.get_name()
     rock_version = check_rock.get_version()
-    LOCAL_rock_IMAGE = f"{rock_image}:{rock_version}"
+    LOCAL_ROCK_IMAGE = f"{rock_image}:{rock_version}"
 
     # verify that all artifacts are in correct locations
-    subprocess.run(["docker", "run", LOCAL_rock_IMAGE, "exec", "ls", "-la", "/microservice/SKLearnServer.py"], check=True)
+    subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/microservice/SKLearnServer.py"], check=True)
 
     # verify that rockcraft.yaml contains correct image name for PREDICTIVE_UNIT_IMAGE environment variable
-    #assert CheckRock.get_environment()["PREDICTIVE_UNIT_IMAGE"].contains(LOCAL_rock_IMAGE)
+    #assert CheckRock.get_environment()["PREDICTIVE_UNIT_IMAGE"].contains(LOCAL_ROCK_IMAGE)
