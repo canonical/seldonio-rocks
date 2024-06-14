@@ -1,7 +1,7 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 #
-# Tests for required artifacts to be present in the ROCK image.
+# Tests for required artifacts to be present in the rock image.
 #
 
 from charmed_kubeflow_chisme.rock import CheckRock

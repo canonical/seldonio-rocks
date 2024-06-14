@@ -1,5 +1,5 @@
 # Based on https://github.com/SeldonIO/MLServer/blob/1.3.5/Dockerfile
-# Operator version is 1.17.1 version for this ROCK can be found in
+# Operator version is 1.17.1 version for this rock can be found in
 # https://github.com/SeldonIO/seldon-core/blob/v1.17.1/operator/config/manager/configmap.yaml
 name: mlserver
 summary: An image for Seldon MLServer Huggingface

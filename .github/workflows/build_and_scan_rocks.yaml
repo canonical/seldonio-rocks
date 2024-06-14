@@ -1,4 +1,4 @@
-name: Build and scan ROCKs, save and send scan reports
+name: Build and scan rocks, save and send scan reports
 
 on:
   schedule:
@@ -24,7 +24,7 @@ jobs:
           remove-docker-images: 'true'
 
   build-scan-rocks:
-    name: Build and scan ROCKs
+    name: Build and scan rocks
     runs-on: ubuntu-20.04
     strategy:
       matrix:

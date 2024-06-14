@@ -2,7 +2,7 @@
 # See LICENSE file for licensing details.
 #
 # Checks out charm repository into `charm_repo`. Updated metadata.yaml with reference to locally
-# built ROCK. Executes integration tests.
+# built rock. Executes integration tests.
 #
 
 from pathlib import Path
@@ -41,12 +41,12 @@ def test_rock(rock_test_env):
     rockfs_tar = "rockfs.tar"
     rockfs_dir = temp_dir.mkdir("rockfs")
 
-    # verify that ROCK service matches charm service
+    # verify that rock service matches charm service
     rock_services = check_rock.get_services()
     assert rock_services["seldon-core"]
     assert rock_services["seldon-core"]["startup"] == "enabled"
 
-    # create ROCK filesystem
+    # create rock filesystem
     subprocess.run(["docker", "create", f"--name={container_name}", LOCAL_ROCK_IMAGE])
     subprocess.run(["docker", "export", f"{container_name}", "--output", rockfs_tar], check=True)
     subprocess.run(["tar", "xvf", rockfs_tar, "-C", rockfs_dir], check=True)

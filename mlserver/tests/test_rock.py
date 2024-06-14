@@ -37,6 +37,6 @@ def test_rock(ops_test: OpsTest, rock_test_env):
     rock_version = check_rock.get_version()
     LOCAL_ROCK_IMAGE = f"{check_rock.get_image_name()}:{check_rock.get_version()}"
 
-    # create ROCK filesystem
+    # create rock filesystem
     subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/lib/python3.8/site-packages/mlserver"], check=True)
     subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/bin/mlserver"], check=True)

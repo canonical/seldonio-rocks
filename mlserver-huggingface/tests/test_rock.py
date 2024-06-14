@@ -40,6 +40,6 @@ def test_rock(rock_test_env):
     assert rock_services["mlserver-huggingface"]
     assert rock_services["mlserver-huggingface"]["startup"] == "enabled"
 
-    # create ROCK filesystem
+    # create rock filesystem
     subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/lib/python3.8/site-packages/mlserver"], check=True)
     subprocess.run(["docker", "run", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/opt/mlserver/.local/bin/mlserver"], check=True)
