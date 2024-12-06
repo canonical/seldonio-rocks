@@ -51,12 +51,6 @@ parts:
       cp ${CRAFT_PART_SRC}/README.md .
 
       sed -i \
-      -e 's/tar -zxvf "\$_envTarball" -C \$_envFolder/tar -zxf "\$_envTarball" -C \$_envFolder/' \
-      -e 's/source \$_activate/source \$_activate 1> \/dev\/null/' \
-      -e 's/conda-unpack --quiet/conda-unpack 1> \/dev\/null/' \
-      hack/activate-env.sh
-
-      sed -i \
       -e 's/\bpython\b/python3.8/g' \
       hack/build-wheels.sh
 
