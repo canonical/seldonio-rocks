@@ -89,8 +89,8 @@ parts:
       # Clear pip cache
       pip cache purge
 
-      find venv -type d -name "tests" -exec rm -r {} +
-      find venv -type d -name "doc" -exec rm -r {} +
+      find ${MLSERVER_PATH}/venv -type d -name "tests" -exec rm -r {} +
+      find ${MLSERVER_PATH}/venv -type d -name "doc" -exec rm -r {} +
       
       # Adjust permissions
       chown -R root:root ${MLSERVER_PATH} && chmod -R 777 ${MLSERVER_PATH}
