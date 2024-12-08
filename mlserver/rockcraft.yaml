@@ -14,12 +14,13 @@ services:
     override: replace
     summary: "mlserver service"
     startup: enabled
-    command: bash -c 'export PATH=/opt/mlserver/venv/bin:${PATH}:/usr/bin && export PYTHONPATH=/opt/mlserver/venv/lib/python3.8/site-packages/:${PYTHONPATH} && mlserver start ${MLSERVER_MODELS_DIR}'
+    command: mlserver start ${MLSERVER_MODELS_DIR}
     working-dir: "/opt/mlserver"
     environment:
+      PATH: "/opt/mlserver/venv/bin:$PATH:/usr/bin"
       MLSERVER_ENV_TARBALL: "/mnt/models/environment.tar.gz"
       MLSERVER_MODELS_DIR: "/mnt/models/"
-      LD_LIBRARY_PATH: "/usr/local/nvidia/lib64:/opt/conda/lib/python3.8/site-packages/nvidia/cuda_runtime/lib:$LD_LIBRARY_PATH"
+      LD_LIBRARY_PATH: "/opt/mlserver/venv/lib/python3.8/site-packages/nvidia/cuda_runtime/lib:$LD_LIBRARY_PATH"
       TRANSFORMERS_CACHE: "/opt/mlserver/.cache"
       NUMBA_CACHE_DIR: "/opt/mlserver/.cache"
 platforms:
