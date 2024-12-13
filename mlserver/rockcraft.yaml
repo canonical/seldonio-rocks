@@ -14,11 +14,11 @@ services:
     override: replace
     summary: "mlserver service"
     startup: enabled
-    command: mlserver start ${MLSERVER_MODELS_DIR}
+    command: bash -c 'source venv/bin/activate && mlserver start ${MLSERVER_MODELS_DIR}'
     working-dir: "/opt/mlserver"
+    user: "mlserver"
     environment:
-      PATH: "/opt/mlserver/venv/bin:$PATH:/usr/bin"
-      MLSERVER_ENV_TARBALL: "/mnt/models/environment.tar.gz"
+      PATH: "$PATH:/opt/mlserver/venv/bin"
       MLSERVER_MODELS_DIR: "/mnt/models/"
       LD_LIBRARY_PATH: "/opt/mlserver/venv/lib/python3.8/site-packages/nvidia/cuda_runtime/lib:$LD_LIBRARY_PATH"
       TRANSFORMERS_CACHE: "/opt/mlserver/.cache"
@@ -34,7 +34,7 @@ parts:
     source-tag: 1.3.2
     overlay-packages:
       - python3-dev
-      - python3-distutils      
+      - python3-distutils
     build-packages:
       - python3-setuptools
       - python3-venv
@@ -43,6 +43,7 @@ parts:
     override-build: |
 
       mkdir -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist
+      mkdir -p ${CRAFT_PART_INSTALL}/opt/mlserver/requirements
       cp ${CRAFT_PART_SRC}/setup.py .
       cp ${CRAFT_PART_SRC}/MANIFEST.in .
       cp ${CRAFT_PART_SRC}/README.md .
@@ -52,6 +53,7 @@ parts:
       hack/build-wheels.sh
 
       ./hack/build-wheels.sh ${CRAFT_PART_INSTALL}/opt/mlserver/dist
+      cp -R ./requirements ${CRAFT_PART_INSTALL}/opt/mlserver
 
     override-stage: |
       export PYTHON_VERSION="3.8.16"
@@ -67,21 +69,20 @@ parts:
       pip install --upgrade pip wheel 'setuptools<65.6.0'
       
       # Install required wheels
-      mkdir -p ./wheels
-      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver-*.whl ./wheels
-      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_huggingface-*.whl ./wheels
-      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_mlflow-*.whl ./wheels
-      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_sklearn-*.whl ./wheels
-      cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_xgboost-*.whl ./wheels
+      #mkdir -p ./wheels
+      #cp -p ${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver{,-huggingface,-mlflow,-sklearn,-xgboost}-*.whl ./wheels
+
       
-      pip install --no-cache-dir $(ls "./wheels/mlserver-"*.whl)
-      pip install --no-cache-dir $(ls "./wheels/mlserver_huggingface-"*.whl)
-      pip install --no-cache-dir $(ls "./wheels/mlserver_mlflow-"*.whl)
-      pip install --no-cache-dir $(ls "./wheels/mlserver_sklearn-"*.whl)
-      pip install --no-cache-dir $(ls "./wheels/mlserver_xgboost-"*.whl)      
+      pip install --no-cache-dir $(ls "${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver-"*.whl)
+      pip install --no-cache-dir $(ls "${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_huggingface-"*.whl)
+      pip install --no-cache-dir $(ls "${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_mlflow-"*.whl)
+      pip install --no-cache-dir $(ls "${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_sklearn-"*.whl)
+      pip install --no-cache-dir $(ls "${CRAFT_PART_INSTALL}/opt/mlserver/dist/mlserver_xgboost-"*.whl)
+      pip install --no-cache-dir -r ${CRAFT_PART_INSTALL}/opt/mlserver/requirements/docker.txt
 
       # Clear pip cache
       pip cache purge
+      rm -rf /root/.cache/pip
 
       # Adjust permissions
       chown -R root:root ${MLSERVER_PATH} && chmod -R 777 ${MLSERVER_PATH}
@@ -90,9 +91,6 @@ parts:
       export PYTHON_PATH="/opt/mlserver/venv/bin/python3.8"
       sed -i "1s|.*|#!${PYTHON_PATH}|" ${MLSERVER_PATH}/venv/bin/mlserver
       
-      # Clean up wheels
-      rm -rf ./wheels
-
     override-prime: |
       # copy all artifacts
       cp -rp ${CRAFT_STAGE}/opt .
@@ -104,6 +102,18 @@ parts:
       cp ${CRAFT_PART_SRC}/hack/build-env.sh hack/
       cp ${CRAFT_PART_SRC}/hack/generate_dotenv.py hack/
       cp ${CRAFT_PART_SRC}/hack/activate-env.sh hack/
+
+  # not-root user for this rock should be 'mlserver'  
+  non-root-user:
+    plugin: nil
+    after: [ mlserver ]
+    overlay-script: |
+      groupadd -R $CRAFT_OVERLAY -g 1000 mlserver
+      useradd -R $CRAFT_OVERLAY -M -r -u 1000 -g mlserver mlserver
+    override-prime: |
+      craftctl default    
+      chown -R 1000:0 opt/mlserver
+      chmod -R 776 opt/mlserver
 
   security-team-requirement:
     plugin: nil
