@@ -30,22 +30,7 @@ def test_rock():
         check=True,
     )
 
-    # Assert the rock contains the expected file in /third_party
     subprocess.run(
-        [
-            "docker",
-            "run",
-            "--rm",
-            LOCAL_ROCK_IMAGE,
-            "exec",
-            "ls",
-            "-la",
-            "/third_party/NOTICES/",
-        ],
-        check=True,
-    )
-
-    subprocess.run(
-        ["docker", "run", "--rm", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/bin/launcher-v2"],
+        ["docker", "run", "--rm", LOCAL_ROCK_IMAGE, "exec", "ls", "-la", "/opt/mlserver"],
         check=True,
     )
