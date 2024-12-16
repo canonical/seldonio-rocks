@@ -25,7 +25,7 @@ def test_rock():
             "exec",
             "ls",
             "-la",
-            "/licenses/licenses.txt",
+            "/licenses/license.txt",
         ],
         check=True,
     )
