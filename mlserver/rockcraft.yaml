@@ -85,7 +85,7 @@ parts:
       rm -rf /root/.cache/pip
 
       # Adjust permissions
-      chown -R root:root ${MLSERVER_PATH} && chmod -R 777 ${MLSERVER_PATH}
+      chown -R root:root ${MLSERVER_PATH} && chmod -R 776 ${MLSERVER_PATH}
       
       # Update mlserver script to reference the correct Python executable
       export PYTHON_PATH="/opt/mlserver/venv/bin/python3.8"
