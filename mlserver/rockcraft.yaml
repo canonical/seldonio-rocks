@@ -85,7 +85,7 @@ parts:
       rm -rf /root/.cache/pip
 
       # Adjust permissions
-      chown -R root:root ${MLSERVER_PATH} && chmod -R 776 ${MLSERVER_PATH}
+      chown -R root:root ${MLSERVER_PATH} && chmod -R 777 ${MLSERVER_PATH}
       
       # Update mlserver script to reference the correct Python executable
       export PYTHON_PATH="/opt/mlserver/venv/bin/python3.8"
@@ -113,7 +113,7 @@ parts:
     override-prime: |
       craftctl default    
       chown -R 1000:0 opt/mlserver
-      chmod -R 776 opt/mlserver
+      chmod -R 777 opt/mlserver
 
   security-team-requirement:
     plugin: nil
