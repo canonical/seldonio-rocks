@@ -57,7 +57,7 @@ parts:
 
     override-stage: |
       export PYTHON_VERSION="3.8.16"
-      export MLSERVER_PATH=/opt/mlserver
+      export MLSERVER_PATH=opt/mlserver
       export PATH=/opt/mlserver/venv/bin:$PATH
       
       # Create and activate a virtual environment
