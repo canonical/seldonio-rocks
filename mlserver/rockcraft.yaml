@@ -14,7 +14,7 @@ services:
     override: replace
     summary: "mlserver service"
     startup: enabled
-    command: bash -c 'source venv/bin/activate && mlserver start ${MLSERVER_MODELS_DIR}'
+    command: '/bin/bash -c "source venv/bin/activate && mlserver start ${MLSERVER_MODELS_DIR}"'
     working-dir: "/opt/mlserver"
     user: "mlserver"
     environment:
