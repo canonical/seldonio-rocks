@@ -114,7 +114,6 @@ parts:
     override-prime: |
       craftctl default    
       chown -R 584792:users opt/mlserver
-      chown -R 584792:users bin
       chmod -R 777 opt/mlserver
 
   security-team-requirement:
