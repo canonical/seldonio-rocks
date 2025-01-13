@@ -111,8 +111,8 @@ parts:
       useradd -R $CRAFT_OVERLAY -M -s /bin/bash -N -u 1001 mlserver
     override-prime: |
       craftctl default    
-      chown -R 584792:users /opt/mlserver
-      chmod -R 777 /opt/mlserver
+      chown -R 584792:users opt/mlserver
+      chmod -R 777 opt/mlserver
 
   security-team-requirement:
     plugin: nil
