@@ -108,9 +108,9 @@ parts:
     plugin: nil
     after: [ mlserver ]
     overlay-script: |
-      useradd -R $CRAFT_OVERLAY -M -s /bin/bash -N -u 1001 mlserver
-      # groupadd -R $CRAFT_OVERLAY -g 1000 mlserver
-      # useradd -R $CRAFT_OVERLAY -M -r -u 1000 -g mlserver mlserver
+      # useradd -R $CRAFT_OVERLAY -M -s /bin/bash -N -u 1001 mlserver
+      groupadd -R $CRAFT_OVERLAY -g 1001 mlserver
+      useradd -R $CRAFT_OVERLAY -M -r -u 1001 -g mlserver mlserver
     override-prime: |
       craftctl default    
       chown -R 584792:users opt/mlserver
